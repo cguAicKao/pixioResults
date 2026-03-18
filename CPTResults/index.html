@@ -75,19 +75,19 @@
         .academic-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 0.85rem;
+            font-size: 0.82rem;
             border-top: 2.8px solid black; 
             border-bottom: 2.8px solid black;
         }
         .academic-table th {
-            padding: 10px 6px;
+            padding: 10px 4px;
             border-bottom: 1.2px solid black;
             text-transform: uppercase;
             font-weight: bold;
             letter-spacing: 0.05em;
         }
         .academic-table td {
-            padding: 10px 6px;
+            padding: 10px 4px;
             text-align: center;
         }
         .dataset-cell {
@@ -137,7 +137,7 @@
                 <table class="academic-table">
                     <thead>
                         <tr>
-                            <th style="text-align: left; width: 180px;">基準數據集</th>
+                            <th style="text-align: left; width: 160px;">基準數據集</th>
                             <th>E0</th>
                             <th>E20</th>
                             <th>E40</th>
@@ -147,6 +147,7 @@
                             <th>E120</th>
                             <th>E140</th>
                             <th>E160</th>
+                            <th>E180</th>
                         </tr>
                     </thead>
                     <tbody id="table1Body">
@@ -163,7 +164,7 @@
                 <table class="academic-table">
                     <thead>
                         <tr>
-                            <th style="text-align: left; width: 180px;">基準數據集</th>
+                            <th style="text-align: left; width: 160px;">基準數據集</th>
                             <th>E0</th>
                             <th>E20</th>
                             <th>E40</th>
@@ -173,6 +174,7 @@
                             <th>E120</th>
                             <th>E140</th>
                             <th>E160</th>
+                            <th>E180</th>
                         </tr>
                     </thead>
                     <tbody id="table2Body">
@@ -181,7 +183,7 @@
                 </table>
             </div>
             <div class="mt-6 text-[11px] text-gray-500 font-medium flex justify-between italic">
-                <span>備註：E 代表 Epoch。AUROC 數值反映模型辨別能力，數據持續更新中。</span>
+                <span>備註：E 代表 Epoch。AUROC 與 Accuracy 數值反映模型性能，數據持續更新中。</span>
                 <span class="not-italic font-bold text-black uppercase">Pixio Research &copy; 2026</span>
             </div>
         </div>
@@ -192,37 +194,37 @@
         const rawData = [
             { 
                 ds: 'APTOS2019', 
-                acc: [0.826364, 0.730909, 0.749455, 0.764000, 0.773636, 0.779636, 0.781455, 0.786182, 0.796136], 
-                auroc: [0.940346, 0.865514, 0.891487, 0.899967, 0.902957, 0.903721, 0.908561, 0.913666, 0.918003] 
+                acc: [0.826364, 0.730909, 0.749455, 0.764000, 0.773636, 0.779636, 0.781455, 0.786182, 0.794727, 0.791455], 
+                auroc: [0.940346, 0.865514, 0.891487, 0.899967, 0.902957, 0.903721, 0.908561, 0.913666, 0.918003, undefined] 
             },
             { 
                 ds: 'Glaucoma_fundus', 
-                acc: [0.765591, 0.766882, 0.791828, 0.802581, 0.805161, 0.803441, 0.809462, 0.810323], 
-                auroc: [0.904554, 0.895792, 0.911465, 0.915687, 0.920466, 0.920773, 0.924393, 0.927334, undefined] 
+                acc: [0.765591, 0.766882, 0.791828, 0.802581, 0.805161, 0.803441, 0.809462, 0.810323, 0.821505, 0.829391], 
+                auroc: [0.904554, 0.895792, 0.911465, 0.915687, 0.920466, 0.920773, 0.924393, 0.927334, undefined, undefined] 
             },
             { 
                 ds: 'IDRiD_data', 
-                acc: [0.477670, 0.353398, 0.366990, 0.357282, 0.330097, 0.339806, 0.359223, 0.337864], 
-                auroc: [0.791426, 0.615098, 0.619168, 0.618080, 0.643761, 0.643964, 0.656198, 0.655680, 0.661972] 
+                acc: [0.477670, 0.353398, 0.366990, 0.357282, 0.330097, 0.339806, 0.359223, 0.337864, 0.374757, 0.390291], 
+                auroc: [0.791426, 0.615098, 0.619168, 0.618080, 0.643761, 0.643964, 0.656198, 0.655680, 0.661972, undefined] 
             },
             { 
                 ds: 'MESSIDOR2', 
-                acc: [0.722814, 0.577567, 0.600380, 0.599620, 0.605323, 0.604563, 0.613688, 0.612928], 
-                auroc: [0.885267, 0.706218, 0.756894, 0.775794, 0.783162, 0.770672, 0.803076, 0.805455, 0.810617] 
+                acc: [0.722814, 0.577567, 0.600380, 0.599620, 0.605323, 0.604563, 0.613688, 0.612928, 0.619392, 0.618631], 
+                auroc: [0.885267, 0.706218, 0.756894, 0.775794, 0.783162, 0.770672, 0.803076, 0.805455, 0.810617, undefined] 
             },
             { 
                 ds: 'PAPILA', 
-                acc: [0.722449, 0.683673, 0.748980, 0.755102, 0.765306, 0.753061, 0.759184, 0.736735], 
-                auroc: [0.714491, 0.679847, 0.764615, 0.779164, 0.773438, 0.788725, 0.789943, 0.798123, undefined] 
+                acc: [0.722449, 0.683673, 0.748980, 0.755102, 0.765306, 0.753061, 0.759184, 0.736735, 0.746939], 
+                auroc: [0.714491, 0.679847, 0.764615, 0.779164, 0.773438, 0.788725, 0.789943, 0.798123, undefined, undefined] 
             },
             { 
                 ds: 'Retina', 
-                acc: [0.596685, 0.552486, 0.561326, 0.541436, 0.544751, 0.567956, 0.567956, 0.573481], 
-                auroc: [0.716094, 0.745743, 0.757908, 0.744672, 0.742351, 0.756892, 0.753262, 0.775418, undefined] 
+                acc: [0.596685, 0.552486, 0.561326, 0.541436, 0.544751, 0.567956, 0.567956, 0.573481, 0.574586], 
+                auroc: [0.716094, 0.745743, 0.757908, 0.744672, 0.742351, 0.756892, 0.753262, 0.775418, undefined, undefined] 
             }
         ];
 
-        const fullEpochLabels = [0, 20, 40, 60, 80, 100, 120, 140, 160];
+        const fullEpochLabels = [0, 20, 40, 60, 80, 100, 120, 140, 160, 180];
         const colors = ['#e41a1c', '#377eb8', '#4daf4a', '#ff7f00', '#984ea3', '#a65628'];
         const markers = ['circle', 'rect', 'triangle', 'rectRot', 'star', 'crossRot'];
 
@@ -274,7 +276,15 @@
                         backgroundColor: 'rgba(0,0,0,0.85)', 
                         padding: 12, 
                         cornerRadius: 0,
-                        callbacks: { label: (ctx) => ` ${ctx.dataset.label}: ${ctx.raw !== undefined ? ctx.raw.toFixed(4) : 'N/A'}` }
+                        callbacks: { 
+                            label: (ctx) => {
+                                const val = ctx.raw;
+                                if (yTitle.includes('%')) {
+                                    return ` ${ctx.dataset.label}: ${(val*100).toFixed(2)}%`;
+                                }
+                                return ` ${ctx.dataset.label}: ${val.toFixed(4)}`;
+                            }
+                        }
                     }
                 },
                 scales: {
@@ -288,7 +298,13 @@
                         min: yMin, max: yMax,
                         title: { display: true, text: yTitle, font: { size: 13, weight: 'bold' }, color: '#000', padding: 10 },
                         grid: { color: '#f0f0f0', borderDash: [3, 3] },
-                        ticks: { color: '#000', font: { family: 'serif', size: 11, weight: 'bold' } },
+                        ticks: { 
+                            color: '#000', 
+                            font: { family: 'serif', size: 11, weight: 'bold' },
+                            callback: function(value) {
+                                return yTitle.includes('%') ? (value * 100) + '%' : value;
+                            }
+                        },
                         border: { width: 2, color: '#000' }
                     }
                 }
