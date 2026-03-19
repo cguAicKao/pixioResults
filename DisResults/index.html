@@ -32,6 +32,12 @@
             background-color: transparent;
             color: #64748b;
         }
+        .legend-tip {
+            font-size: 11px;
+            color: #94a3b8;
+            margin-top: 8px;
+            text-align: center;
+        }
     </style>
 </head>
 <body class="p-4 md:p-8">
@@ -40,32 +46,32 @@
         <header class="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
             <div>
                 <h1 class="text-3xl font-bold text-slate-900 text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">模型訓練性能深度監控</h1>
-                <p class="text-slate-500">指標對比：Accuracy & AUROC (Epoch 0 - 160)</p>
+                <p class="text-slate-500">指標對比：Accuracy & AUROC (含基準對照組)</p>
             </div>
-            <div class="text-xs text-slate-400 font-mono bg-white px-3 py-1 rounded-full shadow-sm">Updated: 2024-DR-V6-FULL-METRICS</div>
+            <div class="text-xs text-slate-400 font-mono bg-white px-3 py-1 rounded-full shadow-sm">Updated: 2024-DR-V8-LINKED-LEGEND</div>
         </header>
 
         <!-- Stats Overview -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             <div class="card p-6 border-l-4 border-blue-500">
-                <p class="text-xs text-slate-500 font-bold uppercase tracking-wider">初始 AUROC (E0)</p>
-                <p class="text-3xl font-bold text-slate-800">0.825</p>
-                <p class="text-xs text-slate-400 mt-2 font-medium">全數據集平均初始診斷力</p>
+                <p class="text-xs text-slate-500 font-bold uppercase tracking-wider">APTOS 突破點</p>
+                <p class="text-3xl font-bold text-slate-800">E160</p>
+                <p class="text-xs text-blue-600 mt-2 font-medium">正式超越 MAE 基準 (0.8433)</p>
             </div>
-            <div class="card p-6 border-l-4 border-emerald-500">
-                <p class="text-xs text-emerald-500 font-bold uppercase tracking-wider">Retina AUROC 增幅</p>
-                <p class="text-3xl font-bold text-slate-800">+18.2%</p>
-                <p class="text-xs text-green-600 mt-2 font-medium">從 E0(0.716) 穩定攀升</p>
+            <div class="card p-6 border-l-4 border-emerald-500 bg-emerald-50">
+                <p class="text-xs text-emerald-500 font-bold uppercase tracking-wider">Glaucoma 挑戰</p>
+                <p class="text-3xl font-bold text-slate-800">0.8649</p>
+                <p class="text-xs text-slate-400 mt-2">Dinov2-shanghai 基準線較高</p>
             </div>
-            <div class="card p-6 border-l-4 border-red-500 bg-red-50">
-                <p class="text-xs text-red-600 font-bold uppercase tracking-wider">PAPILA 跨越式成長</p>
-                <p class="text-3xl font-bold text-red-600">0.851</p>
-                <p class="text-xs text-slate-400 mt-2">AUROC 從 0.71 突破至最高點</p>
+            <div class="card p-6 border-l-4 border-red-500">
+                <p class="text-xs text-red-600 font-bold uppercase tracking-wider">IDRiD vs Dinov3</p>
+                <p class="text-3xl font-bold text-red-600">Gap 4%</p>
+                <p class="text-xs text-slate-400 mt-2">目前訓練尚未觸及 Dinov3 (0.6155)</p>
             </div>
             <div class="card p-6 border-l-4 border-indigo-500">
-                <p class="text-xs text-indigo-500 font-bold uppercase tracking-wider">最終穩定性</p>
-                <p class="text-3xl font-bold text-slate-800">優秀</p>
-                <p class="text-xs text-slate-400 mt-2">多數 AUROC > 0.90，分類界限明確</p>
+                <p class="text-xs text-indigo-500 font-bold uppercase tracking-wider">交互功能更新</p>
+                <p class="text-3xl font-bold text-slate-800">連動圖例</p>
+                <p class="text-xs text-slate-400 mt-2">點擊圖例可同時切換實虛線</p>
             </div>
         </div>
 
@@ -73,43 +79,44 @@
             <!-- Main Chart Area -->
             <div class="lg:col-span-2 card p-6">
                 <div class="flex justify-between items-center mb-6">
-                    <h2 id="chartTitle" class="font-bold text-lg text-slate-800">全數據集性能演進 (Accuracy: E0-E160)</h2>
+                    <h2 id="chartTitle" class="font-bold text-lg text-slate-800">性能演進與基準對照 (Accuracy: E0-E160)</h2>
                     <div class="flex gap-2 bg-slate-100 p-1 rounded-lg">
                         <button onclick="switchMetric('accuracy')" id="accBtn" class="tab-btn active">Accuracy</button>
                         <button onclick="switchMetric('auroc')" id="aurocBtn" class="tab-btn inactive">AUROC</button>
                     </div>
                 </div>
-                <div style="height: 450px;">
+                <div style="height: 500px;">
                     <canvas id="evolutionChart"></canvas>
                 </div>
+                <p class="legend-tip">💡 提示：點擊下方圖例標籤，可同時顯示/隱藏該數據集與其對應的虛線基準</p>
             </div>
 
             <!-- Analysis Insights -->
             <div class="space-y-6">
                 <div class="card p-5">
-                    <h3 class="font-bold text-slate-800 mb-3 border-b pb-2">📈 AUROC 演進分析</h3>
+                    <h3 class="font-bold text-slate-800 mb-3 border-b pb-2">📊 互動指南</h3>
                     <ul class="space-y-4">
                         <li>
-                            <p class="text-xs font-bold text-blue-600 uppercase">1. 初始特徵提取能力</p>
-                            <p class="text-[11px] text-slate-500 mt-1">APTOS 在 E0 即具備 0.94 的 AUROC，說明預訓練權重對此類病變影像已有極佳的排序邏輯，後續訓練主要在微調分類閾值。</p>
+                            <p class="text-xs font-bold text-blue-600 uppercase">1. 同色連動切換</p>
+                            <p class="text-[11px] text-slate-500 mt-1">我們將數據集分為六大色系。點擊標記為「[MAE]」或「[Dinov]」的標籤，會連同對應的訓練曲線一起切換。</p>
                         </li>
                         <li>
-                            <p class="text-xs font-bold text-emerald-600 uppercase">2. 穩步提升：Glaucoma</p>
-                            <p class="text-[11px] text-slate-500 mt-1">青光眼數據集從 0.904 提升至 0.940，AUROC 的線性增長顯示模型在長週期訓練中精確捕捉到了杯盤比等細微特徵。</p>
-                        </li>
-                        <li>
-                            <p class="text-xs font-bold text-orange-600 uppercase">3. 難樣本的克服：IDRiD</p>
-                            <p class="text-[11px] text-slate-500 mt-1">IDRiD 在 E0 時 AUROC 為 0.791，是唯一低於 0.8 的指標。訓練後穩定在 0.81 左右，顯示模型在處理該複雜數據集時仍有挑戰。</p>
+                            <p class="text-xs font-bold text-red-600 uppercase">2. 專注模式</p>
+                            <p class="text-[11px] text-slate-500 mt-1">您可以隱藏暫時不需要關注的數據集，專注於 IDRiD 與其 Dinov3 基準線的距離變化。</p>
                         </li>
                     </ul>
                 </div>
 
                 <div class="card p-5 bg-slate-900 text-white">
-                    <h3 class="font-bold mb-3 text-sm">💡 指標觀察結論</h3>
+                    <h3 class="font-bold mb-3 text-sm">📝 操作說明</h3>
                     <div class="space-y-3">
                         <div class="flex items-start gap-2">
-                            <span class="text-blue-400 font-bold">●</span>
-                            <span class="text-xs">**高相關性**：Accuracy 與 AUROC 趨勢高度同步，顯示模型未出現預測偏差。</span>
+                            <span class="text-blue-400 font-bold">✓</span>
+                            <span class="text-xs">實線 = 本次訓練結果</span>
+                        </div>
+                        <div class="flex items-start gap-2">
+                            <span class="text-blue-400 font-bold">--</span>
+                            <span class="text-xs">虛線 = 外部模型基準 (SOTA)</span>
                         </div>
                     </div>
                 </div>
@@ -124,12 +131,21 @@
         
         const dataConfig = {
             accuracy: {
+                // 原始訓練數據
                 APTOS2019: [0.8264, 0.8409, 0.8371, 0.8385, 0.8427, 0.8416, 0.8358, 0.8402, 0.8445],
                 Glaucoma: [0.7656, 0.8116, 0.8129, 0.8159, 0.8254, 0.8163, 0.8176, 0.8370, 0.8387],
                 IDRiD: [0.4777, 0.5476, 0.5301, 0.5592, 0.5437, 0.5709, 0.5379, 0.5670, 0.5398],
                 MESSIDOR2: [0.7228, 0.7262, 0.7293, 0.7331, 0.7445, 0.7365, 0.7376, 0.7327, 0.7403],
                 PAPILA: [0.7224, 0.7673, 0.7735, 0.7592, 0.7592, 0.7673, 0.7694, 0.7653, 0.7633],
-                Retina: [0.5967, 0.7182, 0.7127, 0.7304, 0.7249, 0.7215, 0.7204, 0.7050, 0.7127]
+                Retina: [0.5967, 0.7182, 0.7127, 0.7304, 0.7249, 0.7215, 0.7204, 0.7050, 0.7127],
+                
+                // 基準組
+                "APTOS [MAE]": Array(9).fill(0.8433),
+                "Glaucoma [Dinov2-SH]": Array(9).fill(0.8649),
+                "IDRiD [Dinov3]": Array(9).fill(0.6155),
+                "MESSIDOR2 [Dinov2]": Array(9).fill(0.7513),
+                "PAPILA [Dinov2]": Array(9).fill(0.8388),
+                "Retina [Dinov3]": Array(9).fill(0.7182)
             },
             auroc: {
                 APTOS2019: [0.9403, 0.9475, 0.9458, 0.9448, 0.9447, 0.9440, 0.9445, 0.9467, 0.9458],
@@ -147,20 +163,40 @@
             IDRiD: '#ef4444',
             MESSIDOR2: '#8b5cf6',
             PAPILA: '#f59e0b',
-            Retina: '#64748b'
+            Retina: '#64748b',
+            "APTOS [MAE]": '#3b82f6',
+            "Glaucoma [Dinov2-SH]": '#10b981',
+            "IDRiD [Dinov3]": '#ef4444',
+            "MESSIDOR2 [Dinov2]": '#8b5cf6',
+            "PAPILA [Dinov2]": '#f59e0b',
+            "Retina [Dinov3]": '#64748b'
+        };
+
+        // 建立關鍵字映射，用於判斷哪些圖例應該連動
+        const groupMapping = {
+            "APTOS": ["APTOS2019", "APTOS [MAE]"],
+            "Glaucoma": ["Glaucoma", "Glaucoma [Dinov2-SH]"],
+            "IDRiD": ["IDRiD", "IDRiD [Dinov3]"],
+            "MESSIDOR2": ["MESSIDOR2", "MESSIDOR2 [Dinov2]"],
+            "PAPILA": ["PAPILA", "PAPILA [Dinov2]"],
+            "Retina": ["Retina", "Retina [Dinov3]"]
         };
 
         function renderChart(type) {
-            const datasets = Object.keys(dataConfig[type]).map(name => ({
-                label: name,
-                data: dataConfig[type][name],
-                borderColor: colors[name],
-                backgroundColor: colors[name],
-                borderWidth: name === 'IDRiD' ? 4 : 2,
-                pointRadius: 4,
-                tension: 0.25,
-                fill: false
-            }));
+            const datasets = Object.keys(dataConfig[type]).map(name => {
+                const isBaseline = name.includes('[') || name.includes('Dinov');
+                return {
+                    label: name,
+                    data: dataConfig[type][name],
+                    borderColor: colors[name],
+                    backgroundColor: colors[name],
+                    borderWidth: isBaseline ? 1.5 : (name === 'IDRiD' ? 4 : 2.5),
+                    borderDash: isBaseline ? [5, 5] : [],
+                    pointRadius: isBaseline ? 0 : 4,
+                    tension: 0.25,
+                    fill: false
+                };
+            });
 
             if (currentChart) currentChart.destroy();
 
@@ -172,7 +208,51 @@
                     maintainAspectRatio: false,
                     interaction: { mode: 'index', intersect: false },
                     plugins: {
-                        legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 11 } } },
+                        legend: { 
+                            position: 'bottom', 
+                            labels: { 
+                                boxWidth: 10, 
+                                font: { size: 10 }
+                            },
+                            // 自定義點擊邏輯：連動切換
+                            onClick: function(e, legendItem, legend) {
+                                const chart = legend.chart;
+                                const clickedLabel = legendItem.text;
+                                
+                                // 找出點擊的標籤屬於哪個群組
+                                let targetGroup = [];
+                                for (const key in groupMapping) {
+                                    if (clickedLabel.includes(key)) {
+                                        targetGroup = groupMapping[key];
+                                        break;
+                                    }
+                                }
+
+                                if (targetGroup.length > 0) {
+                                    // 獲取當前點擊項目的可見性狀態（取反）
+                                    const isVisible = !chart.isDatasetVisible(legendItem.datasetIndex);
+                                    
+                                    // 遍歷所有數據集，如果是同群組的就同步
+                                    chart.data.datasets.forEach((dataset, index) => {
+                                        if (targetGroup.some(member => dataset.label === member)) {
+                                            if (isVisible) {
+                                                chart.show(index);
+                                            } else {
+                                                chart.hide(index);
+                                            }
+                                        }
+                                    });
+                                } else {
+                                    // 如果不在預設群組，執行默認單個切換
+                                    const index = legendItem.datasetIndex;
+                                    if (chart.isDatasetVisible(index)) {
+                                        chart.hide(index);
+                                    } else {
+                                        chart.show(index);
+                                    }
+                                }
+                            }
+                        },
                         tooltip: { padding: 10 }
                     },
                     scales: {
@@ -191,7 +271,7 @@
         function switchMetric(metric) {
             document.getElementById('accBtn').className = metric === 'accuracy' ? 'tab-btn active' : 'tab-btn inactive';
             document.getElementById('aurocBtn').className = metric === 'auroc' ? 'tab-btn active' : 'tab-btn inactive';
-            document.getElementById('chartTitle').innerText = `全數據集性能演進 (${metric.toUpperCase()}: E0-E160)`;
+            document.getElementById('chartTitle').innerText = `性能演進與基準對照 (${metric.toUpperCase()}: E0-E160)`;
             renderChart(metric);
         }
 
