@@ -7,15 +7,17 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@500&display=swap');
         body {
             font-family: 'Inter', system-ui, -apple-system, sans-serif;
-            background-color: #f1f5f9;
+            background-color: #f8fafc;
+            color: #1e293b;
         }
         .card {
             background: white;
             border-radius: 1rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e2e8f0;
         }
         .tab-btn {
             padding: 0.5rem 1rem;
@@ -25,7 +27,7 @@
             transition: all 0.2s;
         }
         .tab-btn.active {
-            background-color: #3b82f6;
+            background-color: #0f172a;
             color: white;
         }
         .tab-btn.inactive {
@@ -38,17 +40,52 @@
             margin-top: 8px;
             text-align: center;
         }
+        /* 表格樣式 - 純數據呈現，無特殊引導色 */
+        .data-table-container {
+            margin-top: 2rem;
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-variant-numeric: tabular-nums;
+            border: 2px solid #000;
+        }
+        th {
+            background-color: #f1f5f9;
+            color: #000;
+            font-weight: 700;
+            font-size: 0.75rem;
+            padding: 0.75rem;
+            border: 1px solid #cbd5e1;
+            text-align: center;
+        }
+        td {
+            padding: 0.6rem;
+            border: 1px solid #cbd5e1;
+            font-size: 0.8rem;
+            text-align: center;
+            font-family: 'JetBrains Mono', monospace;
+            background-color: #ffffff;
+        }
+        .dataset-name-cell {
+            text-align: left;
+            font-weight: 600;
+            background-color: #f8fafc;
+            font-family: 'Inter', sans-serif;
+            width: 180px;
+        }
     </style>
 </head>
 <body class="p-4 md:p-8">
     <div class="max-w-7xl mx-auto">
         <!-- Header -->
-        <header class="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <header class="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4 border-b-2 border-slate-200 pb-6">
             <div>
-                <h1 class="text-3xl font-bold text-slate-900 text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">模型訓練性能深度監控</h1>
+                <h1 class="text-3xl font-bold text-slate-900">模型訓練性能深度監控</h1>
                 <p class="text-slate-500">指標對比：Accuracy & AUROC (含基準對照組)</p>
             </div>
-            <div class="text-xs text-slate-400 font-mono bg-white px-3 py-1 rounded-full shadow-sm">Updated: 2024-DR-V9-WITH-STATS</div>
+            <div class="text-xs text-slate-400 font-mono bg-white px-3 py-1 rounded-full shadow-sm border">Updated: 2024-DR-V11</div>
         </header>
 
         <!-- Stats Overview -->
@@ -56,132 +93,123 @@
             <div class="card p-6 border-l-4 border-blue-500">
                 <p class="text-xs text-slate-500 font-bold uppercase tracking-wider">APTOS 突破點</p>
                 <p class="text-3xl font-bold text-slate-800">E160</p>
-                <p class="text-xs text-blue-600 mt-2 font-medium">正式超越 MAE 基準 (0.8433)</p>
+                <p class="text-xs text-blue-600 mt-2 font-medium">正式超越 MAE 基準</p>
             </div>
-            <div class="card p-6 border-l-4 border-emerald-500 bg-emerald-50">
-                <p class="text-xs text-emerald-500 font-bold uppercase tracking-wider">Glaucoma 挑戰</p>
-                <p class="text-3xl font-bold text-slate-800">0.8649</p>
-                <p class="text-xs text-slate-400 mt-2">Dinov2-shanghai 基準線較高</p>
+            <div class="card p-6 border-l-4 border-emerald-500">
+                <p class="text-xs text-emerald-500 font-bold uppercase tracking-wider">Glaucoma 最高值</p>
+                <p class="text-3xl font-bold text-slate-800">0.8387</p>
+                <p class="text-xs text-slate-400 mt-2">Accuracy 持續攀升中</p>
             </div>
             <div class="card p-6 border-l-4 border-red-500">
-                <p class="text-xs text-red-600 font-bold uppercase tracking-wider">IDRiD vs Dinov3</p>
-                <p class="text-3xl font-bold text-red-600">Gap 4%</p>
-                <p class="text-xs text-slate-400 mt-2">目前訓練尚未觸及 Dinov3 (0.6155)</p>
+                <p class="text-xs text-red-600 font-bold uppercase tracking-wider">IDRiD 狀態</p>
+                <p class="text-3xl font-bold text-slate-800">0.5398</p>
+                <p class="text-xs text-slate-400 mt-2">AUROC 穩定在 0.81 以上</p>
             </div>
             <div class="card p-6 border-l-4 border-indigo-500">
-                <p class="text-xs text-indigo-500 font-bold uppercase tracking-wider">交互功能更新</p>
-                <p class="text-3xl font-bold text-slate-800">數據集統計</p>
-                <p class="text-xs text-slate-400 mt-2">下方新增 Dataset Statistics 圖表</p>
+                <p class="text-xs text-indigo-500 font-bold uppercase tracking-wider">數據矩陣</p>
+                <p class="text-3xl font-bold text-slate-800">表格優化</p>
+                <p class="text-xs text-slate-400 mt-2">移除最後一欄引導色</p>
             </div>
         </div>
 
-        <!-- Main Content Grid -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-            <!-- Evolution Chart -->
-            <div class="lg:col-span-2 card p-6">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 id="chartTitle" class="font-bold text-lg text-slate-800">性能演進與基準對照 (Accuracy: E0-E160)</h2>
-                    <div class="flex gap-2 bg-slate-100 p-1 rounded-lg">
-                        <button onclick="switchMetric('accuracy')" id="accBtn" class="tab-btn active">Accuracy</button>
-                        <button onclick="switchMetric('auroc')" id="aurocBtn" class="tab-btn inactive">AUROC</button>
-                    </div>
+        <!-- Main Chart Section -->
+        <div class="card p-6 mb-8">
+            <div class="flex justify-between items-center mb-6">
+                <h2 id="chartTitle" class="font-bold text-lg text-slate-800">性能演進與基準對照 (Accuracy: E0-E160)</h2>
+                <div class="flex gap-2 bg-slate-100 p-1 rounded-lg">
+                    <button onclick="switchMetric('accuracy')" id="accBtn" class="tab-btn active">Accuracy</button>
+                    <button onclick="switchMetric('auroc')" id="aurocBtn" class="tab-btn inactive">AUROC</button>
                 </div>
-                <div style="height: 400px;">
-                    <canvas id="evolutionChart"></canvas>
-                </div>
-                <p class="legend-tip">💡 提示：點擊下方圖例標籤，可同時顯示/隱藏該數據集與其對應的虛線基準</p>
             </div>
+            <div style="height: 450px;">
+                <canvas id="evolutionChart"></canvas>
+            </div>
+            <p class="legend-tip">💡 提示：線圖維持多彩呈現；點擊下方圖例標籤可連動隱藏數據集與對應基準</p>
+        </div>
 
-            <!-- Analysis Insights -->
-            <div class="space-y-6">
-                <div class="card p-5">
-                    <h3 class="font-bold text-slate-800 mb-3 border-b pb-2">📊 互動指南</h3>
-                    <ul class="space-y-4">
-                        <li>
-                            <p class="text-xs font-bold text-blue-600 uppercase">1. 同色連動切換</p>
-                            <p class="text-[11px] text-slate-500 mt-1">點擊標記為「[MAE]」或「[Dinov]」的標籤，會連同對應的訓練曲線一起切換。</p>
-                        </li>
-                        <li>
-                            <p class="text-xs font-bold text-red-600 uppercase">2. 專注模式</p>
-                            <p class="text-[11px] text-slate-500 mt-1">隱藏不需要關注的數據集，專注於特定指標與基準線的距離。</p>
-                        </li>
-                    </ul>
-                </div>
-
-                <div class="card p-5 bg-slate-900 text-white">
-                    <h3 class="font-bold mb-3 text-sm">📝 操作說明</h3>
-                    <div class="space-y-2">
-                        <div class="flex items-start gap-2 text-xs">
-                            <span class="text-blue-400 font-bold">實線</span> <span>本次訓練結果</span>
-                        </div>
-                        <div class="flex items-start gap-2 text-xs">
-                            <span class="text-blue-400 font-bold">虛線</span> <span>外部模型基準</span>
-                        </div>
-                    </div>
-                </div>
+        <!-- Data Tables Section (Accuracy) -->
+        <div class="card p-6 mb-8">
+            <h2 class="font-bold text-xl text-slate-800 mb-4 flex items-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                1. Accuracy 完整數據表
+            </h2>
+            <div class="data-table-container">
+                <table id="accuracyTable">
+                    <thead>
+                        <tr id="accTableHeader">
+                            <th class="dataset-name-cell">數據集 \ Epoch</th>
+                            <!-- JS Injection -->
+                        </tr>
+                    </thead>
+                    <tbody id="accTableBody">
+                        <!-- JS Injection -->
+                    </tbody>
+                </table>
             </div>
         </div>
 
-        <!-- Dataset Statistics Section (New) -->
+        <!-- Data Tables Section (AUROC) -->
         <div class="card p-6">
-            <div class="flex items-center justify-between mb-6 border-b pb-4">
-                <h2 class="font-bold text-xl text-slate-800 flex items-center gap-2">
-                    <svg class="w-6 h-6 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
-                    Dataset Statistics (影像數據量統計)
-                </h2>
-                <span class="px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-xs font-bold">Total: 8,655 Samples</span>
-            </div>
-            <div style="height: 350px;">
-                <canvas id="statsChart"></canvas>
+            <h2 class="font-bold text-xl text-slate-800 mb-4 flex items-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                2. AUROC 完整數據表
+            </h2>
+            <div class="data-table-container">
+                <table id="aurocTable">
+                    <thead>
+                        <tr id="aurocTableHeader">
+                            <th class="dataset-name-cell">數據集 \ Epoch</th>
+                            <!-- JS Injection -->
+                        </tr>
+                    </thead>
+                    <tbody id="aurocTableBody">
+                        <!-- JS Injection -->
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
 
     <script>
         const ctxEvolution = document.getElementById('evolutionChart').getContext('2d');
-        const ctxStats = document.getElementById('statsChart').getContext('2d');
         let evolutionChart;
         
         const labels = ['E0', 'E20', 'E40', 'E60', 'E80', 'E100', 'E120', 'E140', 'E160'];
         
         const dataConfig = {
             accuracy: {
-                APTOS2019: [0.8264, 0.8409, 0.8371, 0.8385, 0.8427, 0.8416, 0.8358, 0.8402, 0.8445],
-                Glaucoma: [0.7656, 0.8116, 0.8129, 0.8159, 0.8254, 0.8163, 0.8176, 0.8370, 0.8387],
-                IDRiD: [0.4777, 0.5476, 0.5301, 0.5592, 0.5437, 0.5709, 0.5379, 0.5670, 0.5398],
-                MESSIDOR2: [0.7228, 0.7262, 0.7293, 0.7331, 0.7445, 0.7365, 0.7376, 0.7327, 0.7403],
-                PAPILA: [0.7224, 0.7673, 0.7735, 0.7592, 0.7592, 0.7673, 0.7694, 0.7653, 0.7633],
-                Retina: [0.5967, 0.7182, 0.7127, 0.7304, 0.7249, 0.7215, 0.7204, 0.7050, 0.7127],
-                "APTOS [MAE]": Array(9).fill(0.8433),
-                "Glaucoma [Dinov2-SH]": Array(9).fill(0.8649),
-                "IDRiD [Dinov3]": Array(9).fill(0.6155),
-                "MESSIDOR2 [Dinov2]": Array(9).fill(0.7513),
-                "PAPILA [Dinov2]": Array(9).fill(0.8388),
-                "Retina [Dinov3]": Array(9).fill(0.7182)
+                "APTOS2019": [0.8264, 0.8409, 0.8371, 0.8385, 0.8427, 0.8416, 0.8358, 0.8402, 0.8445],
+                "Glaucoma": [0.7656, 0.8116, 0.8129, 0.8159, 0.8254, 0.8163, 0.8176, 0.8370, 0.8387],
+                "IDRiD": [0.4777, 0.5476, 0.5301, 0.5592, 0.5437, 0.5709, 0.5379, 0.5670, 0.5398],
+                "MESSIDOR2": [0.7228, 0.7262, 0.7293, 0.7331, 0.7445, 0.7365, 0.7376, 0.7327, 0.7403],
+                "PAPILA": [0.7224, 0.7673, 0.7735, 0.7592, 0.7592, 0.7673, 0.7694, 0.7653, 0.7633],
+                "Retina": [0.5967, 0.7182, 0.7127, 0.7304, 0.7249, 0.7215, 0.7204, 0.7050, 0.7127]
+            },
+            baselines: {
+                "APTOS [MAE]": 0.8433,
+                "Glaucoma [Dinov2-SH]": 0.8649,
+                "IDRiD [Dinov3]": 0.6155,
+                "MESSIDOR2 [Dinov2]": 0.7513,
+                "PAPILA [Dinov2]": 0.8388,
+                "Retina [Dinov3]": 0.7182
             },
             auroc: {
-                APTOS2019: [0.9403, 0.9475, 0.9458, 0.9448, 0.9447, 0.9440, 0.9445, 0.9467, 0.9458],
-                Glaucoma: [0.9046, 0.9303, 0.9304, 0.9341, 0.9369, 0.9310, 0.9356, 0.9383, 0.9400],
-                IDRiD: [0.7914, 0.8068, 0.8155, 0.8157, 0.8125, 0.8104, 0.8085, 0.8167, 0.8149],
-                MESSIDOR2: [0.8850, 0.8916, 0.8913, 0.8922, 0.8940, 0.8909, 0.8938, 0.8919, 0.8896],
-                PAPILA: [0.7145, 0.8485, 0.8438, 0.8460, 0.8433, 0.8369, 0.8511, 0.8400, 0.8431],
-                Retina: [0.7161, 0.8970, 0.9005, 0.8998, 0.9010, 0.9017, 0.8947, 0.8874, 0.8981]
+                "APTOS2019": [0.9403, 0.9475, 0.9458, 0.9448, 0.9447, 0.9440, 0.9445, 0.9467, 0.9458],
+                "Glaucoma": [0.9046, 0.9303, 0.9304, 0.9341, 0.9369, 0.9310, 0.9356, 0.9383, 0.9400],
+                "IDRiD": [0.7914, 0.8068, 0.8155, 0.8157, 0.8125, 0.8104, 0.8085, 0.8167, 0.8149],
+                "MESSIDOR2": [0.8850, 0.8916, 0.8913, 0.8922, 0.8940, 0.8909, 0.8938, 0.8919, 0.8896],
+                "PAPILA": [0.7145, 0.8485, 0.8438, 0.8460, 0.8433, 0.8369, 0.8511, 0.8400, 0.8431],
+                "Retina": [0.7161, 0.8970, 0.9005, 0.8998, 0.9010, 0.9017, 0.8947, 0.8874, 0.8981]
             }
         };
 
         const colors = {
-            APTOS2019: '#3b82f6',
-            Glaucoma: '#10b981',
-            IDRiD: '#ef4444',
-            MESSIDOR2: '#8b5cf6',
-            PAPILA: '#f59e0b',
-            Retina: '#64748b',
-            "APTOS [MAE]": '#3b82f6',
-            "Glaucoma [Dinov2-SH]": '#10b981',
-            "IDRiD [Dinov3]": '#ef4444',
-            "MESSIDOR2 [Dinov2]": '#8b5cf6',
-            "PAPILA [Dinov2]": '#f59e0b',
-            "Retina [Dinov3]": '#64748b'
+            "APTOS2019": '#3b82f6',
+            "Glaucoma": '#10b981',
+            "IDRiD": '#ef4444',
+            "MESSIDOR2": '#8b5cf6',
+            "PAPILA": '#f59e0b',
+            "Retina": '#64748b'
         };
 
         const groupMapping = {
@@ -193,67 +221,50 @@
             "Retina": ["Retina", "Retina [Dinov3]"]
         };
 
-        function initStatsChart() {
-            const datasetsLabels = ['APTOS2019', 'Glaucoma Fundus', 'IDRiD Data', 'MESSIDOR2', 'PAPILA', 'Retina'];
-            const trainingData = [2048, 861, 329, 972, 311, 336];
-            const valData = [514, 218, 84, 246, 79, 84];
-            const testData = [1100, 465, 103, 526, 98, 181];
-
-            new Chart(ctxStats, {
-                type: 'bar',
-                data: {
-                    labels: datasetsLabels,
-                    datasets: [
-                        { label: 'Training', data: trainingData, backgroundColor: '#fbbf24' },
-                        { label: 'Validation', data: valData, backgroundColor: '#fcd34d' },
-                        { label: 'Test', data: testData, backgroundColor: '#fef3c7' }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    indexAxis: 'y', // 水平長條圖
-                    plugins: {
-                        legend: { position: 'top' },
-                        tooltip: { mode: 'index', intersect: false }
-                    },
-                    scales: {
-                        x: { stacked: true, title: { display: true, text: 'Number of Images' } },
-                        y: { stacked: true }
-                    }
-                }
-            });
-        }
-
         function renderEvolutionChart(type) {
-            const datasets = Object.keys(dataConfig[type]).map(name => {
-                const isBaseline = name.includes('[') || name.includes('Dinov');
-                return {
+            const chartDatasets = [];
+            
+            Object.keys(dataConfig[type]).forEach(name => {
+                chartDatasets.push({
                     label: name,
                     data: dataConfig[type][name],
                     borderColor: colors[name],
                     backgroundColor: colors[name],
-                    borderWidth: isBaseline ? 1.5 : (name === 'IDRiD' ? 4 : 2.5),
-                    borderDash: isBaseline ? [5, 5] : [],
-                    pointRadius: isBaseline ? 0 : 4,
+                    borderWidth: name === 'IDRiD' ? 4 : 2.5,
+                    pointRadius: 4,
                     tension: 0.25,
                     fill: false
-                };
+                });
             });
+
+            if (type === 'accuracy') {
+                Object.keys(dataConfig.baselines).forEach(name => {
+                    const baseKey = name.split(' ')[0];
+                    chartDatasets.push({
+                        label: name,
+                        data: Array(9).fill(dataConfig.baselines[name]),
+                        borderColor: colors[baseKey] || '#ccc',
+                        borderDash: [5, 5],
+                        borderWidth: 1.5,
+                        pointRadius: 0,
+                        fill: false
+                    });
+                });
+            }
 
             if (evolutionChart) evolutionChart.destroy();
 
             evolutionChart = new Chart(ctxEvolution, {
                 type: 'line',
-                data: { labels: labels, datasets: datasets },
+                data: { labels: labels, datasets: chartDatasets },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     interaction: { mode: 'index', intersect: false },
                     plugins: {
                         legend: { 
-                            position: 'bottom', 
-                            labels: { boxWidth: 10, font: { size: 10 } },
+                            position: 'bottom',
+                            labels: { boxWidth: 12, font: { size: 11 } },
                             onClick: function(e, legendItem, legend) {
                                 const chart = legend.chart;
                                 const clickedLabel = legendItem.text;
@@ -282,10 +293,47 @@
                         y: { 
                             min: type === 'accuracy' ? 0.4 : 0.7,
                             max: type === 'accuracy' ? 0.9 : 1.0,
+                            grid: { color: '#f1f5f9' },
                             title: { display: true, text: type === 'accuracy' ? 'Accuracy Mean' : 'AUROC Mean' }
-                        }
+                        },
+                        x: { grid: { display: false } }
                     }
                 }
+            });
+        }
+
+        function populateTables() {
+            const accHeader = document.getElementById('accTableHeader');
+            const aurocHeader = document.getElementById('aurocTableHeader');
+            const accBody = document.getElementById('accTableBody');
+            const aurocBody = document.getElementById('aurocTableBody');
+
+            // Header
+            labels.forEach(e => {
+                accHeader.innerHTML += `<th>${e}</th>`;
+                aurocHeader.innerHTML += `<th>${e}</th>`;
+            });
+
+            // Accuracy Body
+            Object.keys(dataConfig.accuracy).forEach(name => {
+                const vals = dataConfig.accuracy[name];
+                let row = `<tr><td class="dataset-name-cell">${name}</td>`;
+                vals.forEach((v) => {
+                    row += `<td>${v.toFixed(4)}</td>`;
+                });
+                row += '</tr>';
+                accBody.innerHTML += row;
+            });
+
+            // AUROC Body
+            Object.keys(dataConfig.auroc).forEach(name => {
+                const vals = dataConfig.auroc[name];
+                let row = `<tr><td class="dataset-name-cell">${name}</td>`;
+                vals.forEach((v) => {
+                    row += `<td>${v.toFixed(4)}</td>`;
+                });
+                row += '</tr>';
+                aurocBody.innerHTML += row;
             });
         }
 
@@ -298,7 +346,7 @@
 
         window.onload = () => {
             renderEvolutionChart('accuracy');
-            initStatsChart();
+            populateTables();
         };
     </script>
 </body>
