@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pixio 實驗結果學術圖表</title>
+    <title>Pixio 實驗結果學術圖表 (Full Integrated Layout)</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -14,92 +14,122 @@
             color: #000;
         }
         .paper-container {
-            max-width: 1400px;
+            max-width: 1200px;
             margin: 0 auto;
             padding: 3.5rem;
         }
         .figure-layout {
             display: flex;
-            align-items: flex-start;
+            flex-direction: row;
             gap: 2rem;
             margin-bottom: 3.5rem;
         }
         .charts-container {
-            display: grid;
-            grid-template-cols: 1fr 1fr;
-            gap: 2.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 4rem;
             flex-grow: 1;
         }
         .chart-box {
             position: relative;
-            height: 450px;
+            height: 400px;
             padding: 10px;
+        }
+        .dist-chart-box {
+            position: relative;
+            height: 500px;
+            padding: 20px;
+            background: #fafafa;
+            border-radius: 8px;
+            border: 1px solid #eee;
         }
         .custom-legend {
             flex-shrink: 0;
-            width: 260px;
-            padding-top: 50px;
+            width: 300px;
+            padding-top: 20px;
             padding-left: 1.5rem;
             border-left: 1px solid #eee;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+        }
+        .legend-section {
+            margin-bottom: 2.5rem;
         }
         .legend-item {
             display: flex;
             align-items: center;
-            margin-bottom: 14px;
-            font-size: 0.85rem;
-            font-weight: 700;
+            margin-bottom: 12px;
+            padding: 8px;
+            border-radius: 6px;
             cursor: pointer;
-            transition: opacity 0.2s;
+            transition: all 0.2s;
             user-select: none;
+            border: 1px solid transparent;
+            background-color: #fcfcfc;
         }
         .legend-item:hover {
-            opacity: 0.7;
+            background-color: #f3f4f6;
+            border-color: #e5e7eb;
         }
         .legend-item.hidden-state {
-            opacity: 0.3;
-            text-decoration: line-through;
+            opacity: 0.25;
+            filter: grayscale(1);
         }
         .legend-visual {
-            width: 40px;
+            width: 35px;
             display: flex;
             flex-direction: column;
-            gap: 4px;
+            gap: 6px;
             margin-right: 12px;
+            align-items: center;
         }
-        .line-solid {
+        .line-solid { width: 100%; height: 4px; border-radius: 2px; }
+        .line-dashed { width: 100%; height: 0px; border-top: 2px dashed; }
+        
+        .legend-text {
+            display: flex;
+            flex-direction: column;
             width: 100%;
-            height: 3px;
         }
-        .line-dashed {
-            width: 100%;
-            height: 0px;
-            border-top: 2px dashed;
+        .dataset-name {
+            font-size: 0.8rem;
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 2px;
         }
+        .model-tag {
+            font-size: 0.6rem;
+            color: #444;
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            white-space: nowrap;
+        }
+        .tag-prefix { font-weight: bold; color: #888; width: 40px; flex-shrink: 0; }
+
         .caption {
             text-align: center;
             font-size: 1.05rem;
             font-weight: bold;
             margin-top: 18px;
             color: #000;
-            letter-spacing: 0.01em;
         }
         .academic-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 0.78rem;
+            font-size: 0.72rem;
             border-top: 2.8px solid black; 
             border-bottom: 2.8px solid black;
         }
         .academic-table th {
-            padding: 10px 2px;
+            padding: 8px 2px;
             border-bottom: 1.2px solid black;
             text-transform: uppercase;
             font-weight: bold;
         }
-        .academic-table td {
-            padding: 10px 2px;
-            text-align: center;
-        }
+        .academic-table td { padding: 8px 2px; text-align: center; }
         .dataset-cell {
             text-align: left !important;
             font-weight: bold;
@@ -111,196 +141,191 @@
 </head>
 <body>
     <div class="paper-container">
-        <div class="mb-14 border-b-2 border-black pb-4">
-            <h1 class="text-2xl font-bold uppercase tracking-wide">模組收斂性之比較評估 (Comparative Evaluation of Model Convergence)</h1>
+        <div class="mb-10 border-b-2 border-black pb-4">
+            <h1 class="text-2xl font-bold uppercase tracking-wide">模型收斂性評估與數據統計</h1>
         </div>
 
+        <!-- 趨勢圖區域 -->
         <div class="figure-layout">
             <div class="charts-container">
-                <div class="flex flex-col">
+                <div class="flex flex-col border-b border-gray-100 pb-8">
                     <div class="chart-box">
                         <canvas id="accuracyChart"></canvas>
                     </div>
-                    <p class="caption">圖 1. (a) 平均準確度趨勢 (Mean Accuracy Trends)</p>
+                    <p class="caption">圖 1. (a) 平均準確度趨勢 (Mean Accuracy)</p>
                 </div>
                 <div class="flex flex-col">
                     <div class="chart-box">
                         <canvas id="aurocChart"></canvas>
                     </div>
-                    <p class="caption">圖 1. (b) 平均 AUROC 趨勢 (Mean AUROC Trends)</p>
+                    <p class="caption">圖 1. (b) 平均 AUROC 趨勢 (Mean AUROC)</p>
                 </div>
             </div>
 
-            <!-- 右側交互圖例 -->
-            <div id="interactiveLegend" class="custom-legend">
-                <p class="text-[10px] font-black mb-4 tracking-[0.2em] text-gray-400 uppercase">Interactive Toggle</p>
-                <p class="text-[9px] mb-6 text-gray-500 italic">點擊下方項目切換 (實線+虛線)</p>
-                <!-- JS 動態插入項目 -->
+            <div class="custom-legend">
+                <div class="legend-section">
+                    <p class="text-[10px] font-black mb-3 tracking-[0.2em] text-red-600 uppercase border-b border-red-100 pb-1">Accuracy Toggle</p>
+                    <div id="accLegendContainer"></div>
+                </div>
+                <div class="legend-section">
+                    <p class="text-[10px] font-black mb-3 tracking-[0.2em] text-blue-600 uppercase border-b border-blue-100 pb-1">AUROC Toggle</p>
+                    <div id="aurocLegendContainer"></div>
+                </div>
             </div>
         </div>
 
-        <!-- 數據表格 1 -->
-        <div class="mt-20">
-            <p class="text-sm font-bold mb-5 italic">表 1. PIXIO 在不同持續預訓練 (CPT) 階段之平均準確度 (Mean Accuracy) 表現數值。</p>
+        <!-- 表格區域 -->
+        <div class="mt-10">
+            <p class="text-sm font-bold mb-4 italic">表 1. 各數據集之平均準確度 (Mean Accuracy) 數值匯總。</p>
             <div class="overflow-x-auto">
                 <table class="academic-table">
-                    <thead>
-                        <tr>
-                            <th class="dataset-cell">基準數據集</th>
-                            <th>E0</th><th>E20</th><th>E40</th><th>E60</th><th>E80</th><th>E100</th>
-                            <th>E120</th><th>E140</th><th>E160</th><th>E180</th><th>E200</th>
-                        </tr>
-                    </thead>
+                    <thead><tr id="accHeader"><th class="dataset-cell">Dataset</th></tr></thead>
                     <tbody id="table1Body"></tbody>
                 </table>
             </div>
         </div>
 
-        <!-- 數據表格 2 -->
         <div class="mt-16">
-            <p class="text-sm font-bold mb-5 italic">表 2. PIXIO 在不同持續預訓練 (CPT) 階段之平均 AUROC (Mean AUROC) 表現數值。</p>
+            <p class="text-sm font-bold mb-4 italic">表 2. 各數據集之平均 AUROC (Mean AUROC) 數值匯總。</p>
             <div class="overflow-x-auto">
                 <table class="academic-table">
-                    <thead>
-                        <tr>
-                            <th class="dataset-cell">基準數據集</th>
-                            <th>E0</th><th>E20</th><th>E40</th><th>E60</th><th>E80</th><th>E100</th>
-                            <th>E120</th><th>E140</th><th>E160</th><th>E180</th><th>E200</th>
-                        </tr>
-                    </thead>
+                    <thead><tr id="aurocHeader"><th class="dataset-cell">Dataset</th></tr></thead>
                     <tbody id="table2Body"></tbody>
                 </table>
             </div>
-            <div class="mt-6 text-[10px] text-gray-500 font-medium flex flex-wrap gap-x-4 italic">
-                <span>備註：MAE=0.8433, Dinov2-sh=0.8649, IDRiD-D3=0.6155, DinoV2(meh)=0.7513, PAPILA-D2=0.8388, Retina-D3=0.7182。</span>
+        </div>
+
+        <!-- 數據統計長條圖區域 -->
+        <div class="mt-24 pt-10 border-t-2 border-gray-200">
+            <div class="dist-chart-box">
+                <canvas id="distributionChart"></canvas>
             </div>
+            <p class="caption">圖 2. 數據集樣本分佈統計 (Dataset Statistics - Stacked Bar)</p>
         </div>
     </div>
 
     <script>
+        const epochLabels = [0, 20, 40, 60, 80, 100, 120, 140, 160, 180, 200, 220, 240, 260, 280];
+        
+        // 原有趨勢數據
         const rawData = [
-            { id: 'aptos', ds: 'APTOS2019', baselineName: 'RETFound MAE', baselineVal: 0.8433, color: '#e41a1c', acc: [0.826364, 0.730909, 0.749455, 0.764000, 0.773636, 0.779636, 0.781455, 0.786182, 0.794727, 0.791455, 0.793091], auroc: [0.940346, 0.865514, 0.891487, 0.899967, 0.902957, 0.903721, 0.908561, 0.913666, 0.918003, 0.918129, 0.920473] },
-            { id: 'glaucoma', ds: 'Glaucoma_fundus', baselineName: 'Dinov2-shanghai', baselineVal: 0.8649, color: '#377eb8', acc: [0.765591, 0.766882, 0.791828, 0.802581, 0.805161, 0.803441, 0.809462, 0.810323, 0.821505, 0.827957, 0.836989], auroc: [0.904554, 0.895792, 0.911465, 0.915687, 0.920466, 0.920773, 0.924393, 0.927334, 0.932660, 0.936286, 0.940167] },
-            { id: 'idrid', ds: 'IDRiD_data', baselineName: 'Dinov3', baselineVal: 0.6155, color: '#4daf4a', acc: [0.477670, 0.353398, 0.366990, 0.357282, 0.330097, 0.339806, 0.359223, 0.337864, 0.374757, 0.390291, 0.417476], auroc: [0.791426, 0.615098, 0.619168, 0.618080, 0.643761, 0.643964, 0.656198, 0.655680, 0.674047, 0.682849, 0.680471] },
-            { id: 'messidor', ds: 'MESSIDOR2', baselineName: 'RETFound Dinov2 (meh)', baselineVal: 0.7513, color: '#ff7f00', acc: [0.722814, 0.577567, 0.600380, 0.599620, 0.605323, 0.604563, 0.613688, 0.612928, 0.619392, 0.618631, 0.618631], auroc: [0.885267, 0.706218, 0.756894, 0.775794, 0.783162, 0.770672, 0.803076, 0.805455, 0.810617, 0.804621, 0.804246] },
-            { id: 'papila', ds: 'PAPILA', baselineName: 'RETFound Dinov2', baselineVal: 0.8388, color: '#984ea3', acc: [0.722449, 0.683673, 0.748980, 0.755102, 0.765306, 0.753061, 0.759184, 0.736735, 0.746939, 0.765306, 0.751020], auroc: [0.714491, 0.679847, 0.764615, 0.779164, 0.773438, 0.788725, 0.789943, 0.798123, 0.787767, 0.785884, 0.788243] },
-            { id: 'retina', ds: 'Retina', baselineName: 'Dinov3', baselineVal: 0.7182, color: '#a65628', acc: [0.596685, 0.552486, 0.561326, 0.541436, 0.544751, 0.567956, 0.567956, 0.573481, 0.574586, 0.586740, 0.590055], auroc: [0.716094, 0.745743, 0.757908, 0.744672, 0.742351, 0.756892, 0.753262, 0.775418, 0.796551, 0.804612, 0.802210] }
+            { id: 'aptos', ds: 'APTOS2019', accBaseModel: '[RETFound MAE-shanghai]', aurocBaseModel: '[Dinov2]', color: '#e41a1c', accBaseline: 0.8433, aurocBaseline: 0.9474, acc: [0.826364, 0.730909, 0.749455, 0.764, 0.773636, 0.779636, 0.781455, 0.786182, 0.794727, 0.791455, 0.793091, 0.794182, 0.800909, 0.797818, 0.804], auroc: [0.940346, 0.865514, 0.891487, 0.899967, 0.902957, 0.903721, 0.908561, 0.913666, 0.918003, 0.918129, 0.920473, 0.922963, 0.924896, 0.923990, 0.925769] },
+            { id: 'glaucoma', ds: 'Glaucoma_fundus', accBaseModel: '[RETFound Dinov2-shanghai]', aurocBaseModel: '[RETFound Dinov2-shanghai]', color: '#377eb8', accBaseline: 0.8649, aurocBaseline: 0.9523, acc: [0.765591, 0.766882, 0.791828, 0.802581, 0.805161, 0.803441, 0.809462, 0.810323, 0.821505, 0.827957, 0.836989, 0.830108, 0.837849, 0.837849, 0.84086], auroc: [0.904554, 0.895792, 0.911465, 0.915687, 0.920466, 0.920773, 0.924393, 0.927334, 0.932660, 0.936286, 0.940167, 0.936967, 0.942412, 0.940237, 0.941567] },
+            { id: 'idrid', ds: 'IDRiD_data', accBaseModel: '[RETFound Dinov2-meh]', aurocBaseModel: '[RETFound Dinov2-meh]', color: '#4daf4a', accBaseline: 0.6155, aurocBaseline: 0.8439, acc: [0.47767, 0.353398, 0.36699, 0.357282, 0.330097, 0.339806, 0.359223, 0.337864, 0.374757, 0.390291, 0.417476, 0.431068, 0.401942, 0.407767, 0.38835], auroc: [0.791426, 0.615098, 0.619168, 0.618080, 0.643761, 0.643964, 0.656198, 0.655680, 0.674047, 0.682849, 0.680471, 0.697842, 0.683613, 0.681873, 0.691782] },
+            { id: 'messidor', ds: 'MESSIDOR2', accBaseModel: '[Dinov3]', aurocBaseModel: '[Dinov3]', color: '#ff7f00', accBaseline: 0.7513, aurocBaseline: 0.9009, acc: [0.722814, 0.577567, 0.60038, 0.59962, 0.605323, 0.604563, 0.613688, 0.612928, 0.619392, 0.618631, 0.618631, 0.624715, 0.631559, 0.634601, 0.623574], auroc: [0.885267, 0.706218, 0.756894, 0.775794, 0.783162, 0.770672, 0.803076, 0.805455, 0.810617, 0.804621, 0.804246, 0.819692, 0.819845, 0.828330, 0.807230] },
+            { id: 'papila', ds: 'PAPILA', accBaseModel: '[RETFound Dinov2-meh]', aurocBaseModel: '[RETFound Dinov2-shanghai]', color: '#984ea3', accBaseline: 0.8388, aurocBaseline: 0.8716, acc: [0.722449, 0.683673, 0.74898, 0.755102, 0.765306, 0.753061, 0.759184, 0.736735, 0.746939, 0.765306, 0.75102, 0.761224, 0.769388, 0.757143, 0.765306], auroc: [0.714491, 0.679847, 0.764615, 0.779164, 0.773438, 0.788725, 0.789943, 0.798123, 0.787767, 0.785884, 0.788243, 0.813329, 0.811845, 0.805484, 0.812752] },
+            { id: 'retina', ds: 'Retina', accBaseModel: '[Dinov3]', aurocBaseModel: '[Dinov3]', color: '#a65628', accBaseline: 0.7182, aurocBaseline: 0.9015, acc: [0.596685, 0.552486, 0.561326, 0.541436, 0.544751, 0.567956, 0.567956, 0.573481, 0.574586, 0.58674, 0.590055, 0.59116, 0.60884, 0.601105, 0.60663], auroc: [0.716094, 0.745743, 0.757908, 0.744672, 0.742351, 0.756892, 0.753262, 0.775418, 0.796551, 0.804612, 0.802210, 0.804531, 0.808509, 0.813491, 0.815272] }
         ];
 
-        const fullEpochLabels = [0, 20, 40, 60, 80, 100, 120, 140, 160, 180, 200];
+        // 新增：圖片中的數據集統計
+        const statsData = {
+            labels: ['APTOS2019', 'Glaucoma Fundus', 'IDRiD Data', 'MESSIDOR2', 'PAPILA', 'Retina'],
+            training: [2048, 861, 329, 972, 311, 336],
+            validation: [514, 218, 84, 246, 79, 84],
+            test: [1100, 465, 103, 526, 98, 181]
+        };
+
         const markers = ['circle', 'rect', 'triangle', 'rectRot', 'star', 'crossRot'];
         let charts = {};
 
         function initUI() {
-            const legendContainer = document.getElementById('interactiveLegend');
+            const accHeader = document.getElementById('accHeader');
+            const aurocHeader = document.getElementById('aurocHeader');
+            const accLegend = document.getElementById('accLegendContainer');
+            const aurocLegend = document.getElementById('aurocLegendContainer');
             const t1Body = document.getElementById('table1Body');
             const t2Body = document.getElementById('table2Body');
-            
+
+            epochLabels.forEach(e => {
+                const thAcc = document.createElement('th'); thAcc.textContent = `E${e}`; accHeader.appendChild(thAcc);
+                const thAuroc = document.createElement('th'); thAuroc.textContent = `E${e}`; aurocHeader.appendChild(thAuroc);
+            });
+
             rawData.forEach((d, i) => {
-                // 生成交互圖例
-                const legendEl = document.createElement('div');
-                legendEl.className = 'legend-item';
-                legendEl.onclick = () => toggleDataset(d.ds, legendEl);
-                legendEl.innerHTML = `
-                    <div class="legend-visual">
-                        <div class="line-solid" style="background-color: ${d.color}"></div>
-                        <div class="line-dashed" style="border-color: ${d.color}"></div>
-                    </div>
-                    <div class="flex flex-col">
-                        <span class="text-black">${d.ds}</span>
-                        <span class="text-[10px] text-gray-500 font-normal">[${d.baselineName}]</span>
-                    </div>
-                `;
-                legendContainer.appendChild(legendEl);
+                const accItem = document.createElement('div');
+                accItem.className = 'legend-item';
+                accItem.onclick = () => toggleDataset('acc', d.ds, accItem);
+                accItem.innerHTML = `<div class="legend-visual"><div class="line-solid" style="background-color:${d.color}"></div><div class="line-dashed" style="border-color:${d.color}"></div></div><div class="legend-text"><span class="dataset-name">${d.ds}</span><div class="model-tag"><span class="tag-prefix">Base:</span> ${d.accBaseModel}</div></div>`;
+                accLegend.appendChild(accItem);
 
-                // 表格數據
-                let row1 = `<tr><td class="dataset-cell">${d.ds}</td>`;
-                fullEpochLabels.forEach((_, idx) => row1 += `<td>${(d.acc[idx]*100).toFixed(2)}%</td>`);
-                t1Body.innerHTML += row1 + `</tr>`;
+                const aurocItem = document.createElement('div');
+                aurocItem.className = 'legend-item';
+                aurocItem.onclick = () => toggleDataset('auroc', d.ds, aurocItem);
+                aurocItem.innerHTML = `<div class="legend-visual"><div class="line-solid" style="background-color:${d.color}"></div><div class="line-dashed" style="border-color:${d.color}"></div></div><div class="legend-text"><span class="dataset-name">${d.ds}</span><div class="model-tag"><span class="tag-prefix">Base:</span> ${d.aurocBaseModel}</div></div>`;
+                aurocLegend.appendChild(aurocItem);
 
-                let row2 = `<tr><td class="dataset-cell">${d.ds}</td>`;
-                fullEpochLabels.forEach((_, idx) => row2 += `<td>${d.auroc[idx].toFixed(4)}</td>`);
-                t2Body.innerHTML += row2 + `</tr>`;
+                let row1 = document.createElement('tr');
+                let cell1 = `<td class="dataset-cell">${d.ds}</td>`;
+                d.acc.forEach(val => cell1 += `<td>${val.toFixed(4)}</td>`);
+                row1.innerHTML = cell1; t1Body.appendChild(row1);
+
+                let row2 = document.createElement('tr');
+                let cell2 = `<td class="dataset-cell">${d.ds}</td>`;
+                d.auroc.forEach(val => cell2 += `<td>${val.toFixed(4)}</td>`);
+                row2.innerHTML = cell2; t2Body.appendChild(row2);
             });
         }
 
-        function toggleDataset(dsName, el) {
+        function toggleDataset(type, dsName, el) {
             el.classList.toggle('hidden-state');
             const isHidden = el.classList.contains('hidden-state');
-
-            Object.values(charts).forEach(chart => {
-                chart.data.datasets.forEach(dataset => {
-                    // 同時匹配該數據集的實線與虛線 (標籤中包含數據集名稱)
-                    if (dataset.label.includes(dsName)) {
-                        dataset.hidden = isHidden;
-                    }
-                });
-                chart.update();
+            charts[type].data.datasets.forEach(dataset => {
+                if (dataset.label === dsName || dataset.label === `${dsName}_base`) dataset.hidden = isHidden;
             });
+            charts[type].update();
         }
 
         function initCharts() {
-            const academicOptions = (yTitle, yMin, yMax) => ({
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { 
-                    legend: { display: false },
-                    tooltip: { backgroundColor: 'rgba(0,0,0,0.85)', padding: 12, cornerRadius: 0 }
-                },
+            const opt = (yTitle, yMin, yMax) => ({
+                responsive: true, maintainAspectRatio: false,
+                interaction: { mode: 'index', intersect: false },
+                plugins: { legend: { display: false }, tooltip: { callbacks: { label: (ctx) => `${ctx.dataset.label}: ${ctx.parsed.y.toFixed(4)}` } } },
                 scales: {
-                    x: {
-                        title: { display: true, text: '訓練疊代次數 (Epochs)', font: { size: 13, weight: 'bold' }, color: '#000' },
-                        grid: { display: false },
-                        ticks: { color: '#000', font: { size: 11, weight: 'bold' } },
-                        border: { width: 2, color: '#000' }
-                    },
-                    y: {
-                        min: yMin, max: yMax,
-                        title: { display: true, text: yTitle, font: { size: 13, weight: 'bold' }, color: '#000' },
-                        grid: { color: '#f0f0f0', borderDash: [3, 3] },
-                        ticks: { color: '#000', font: { family: 'serif', size: 11, weight: 'bold' }, callback: v => yTitle.includes('%') ? (v * 100) + '%' : v },
-                        border: { width: 2, color: '#000' }
-                    }
+                    x: { grid: { display: false }, ticks: { font: { weight: 'bold' } }, border: { width: 2, color: '#000' } },
+                    y: { min: yMin, max: yMax, grid: { color: '#f3f3f3' }, border: { width: 2, color: '#000' }, ticks: { callback: v => v.toFixed(2) } }
                 }
             });
 
-            // Accuracy 圖表數據集 (實線 + 虛線)
-            const accDatasets = [];
+            const accDs = [];
+            const aurocDs = [];
             rawData.forEach((d, i) => {
-                // 實線
-                accDatasets.push({
-                    label: d.ds, data: d.acc, borderColor: d.color, backgroundColor: d.color,
-                    borderWidth: 2.5, pointStyle: markers[i], pointRadius: 5, pointBorderColor: '#fff', pointBorderWidth: 1, tension: 0
-                });
-                // 虛線 (與數據集綁定)
-                accDatasets.push({
-                    label: `${d.ds} [Baseline: ${d.baselineName}]`, data: Array(fullEpochLabels.length).fill(d.baselineVal),
-                    borderColor: d.color, borderWidth: 1.5, borderDash: [5, 5], pointRadius: 0, fill: false, order: -1
-                });
+                accDs.push({ label: d.ds, data: d.acc, borderColor: d.color, backgroundColor: d.color, borderWidth: 2, pointStyle: markers[i], pointRadius: 4, tension: 0 });
+                accDs.push({ label: `${d.ds}_base`, data: Array(epochLabels.length).fill(d.accBaseline), borderColor: d.color, borderWidth: 1, borderDash: [5, 5], pointRadius: 0 });
+                aurocDs.push({ label: d.ds, data: d.auroc, borderColor: d.color, backgroundColor: d.color, borderWidth: 2, pointStyle: markers[i], pointRadius: 4, tension: 0 });
+                aurocDs.push({ label: `${d.ds}_base`, data: Array(epochLabels.length).fill(d.aurocBaseline > 1 ? d.aurocBaseline/100 : d.aurocBaseline), borderColor: d.color, borderWidth: 1, borderDash: [5, 5], pointRadius: 0 });
             });
+            charts.acc = new Chart(document.getElementById('accuracyChart'), { type: 'line', data: { labels: epochLabels, datasets: accDs }, options: opt('Mean Accuracy', 0.3, 0.95) });
+            charts.auroc = new Chart(document.getElementById('aurocChart'), { type: 'line', data: { labels: epochLabels, datasets: aurocDs }, options: opt('Mean AUROC Score', 0.6, 1.0) });
 
-            // AUROC 圖表數據集 (僅實線)
-            const aurocDatasets = rawData.map((d, i) => ({
-                label: d.ds, data: d.auroc, borderColor: d.color, backgroundColor: d.color,
-                borderWidth: 2.5, pointStyle: markers[i], pointRadius: 5, pointBorderColor: '#fff', pointBorderWidth: 1, tension: 0
-            }));
-
-            charts.acc = new Chart(document.getElementById('accuracyChart'), {
-                type: 'line',
-                data: { labels: fullEpochLabels, datasets: accDatasets },
-                options: academicOptions('Mean Accuracy (%)', 0.3, 0.95)
-            });
-
-            charts.auroc = new Chart(document.getElementById('aurocChart'), {
-                type: 'line',
-                data: { labels: fullEpochLabels, datasets: aurocDatasets },
-                options: academicOptions('Mean AUROC Score', 0.6, 1.0)
+            // 新增：數據統計疊加長條圖
+            new Chart(document.getElementById('distributionChart'), {
+                type: 'bar',
+                data: {
+                    labels: statsData.labels,
+                    datasets: [
+                        { label: 'Training', data: statsData.training, backgroundColor: '#3b82f6' },
+                        { label: 'Validation', data: statsData.validation, backgroundColor: '#60a5fa' },
+                        { label: 'Test', data: statsData.test, backgroundColor: '#93c5fd' }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'top', labels: { font: { weight: 'bold' } } },
+                        tooltip: { mode: 'index', intersect: false }
+                    },
+                    scales: {
+                        x: { stacked: true, grid: { display: false }, ticks: { font: { weight: 'bold' } } },
+                        y: { stacked: true, beginAtZero: true, title: { display: true, text: 'Number of Samples', font: { weight: 'bold' } } }
+                    }
+                }
             });
         }
 
-        window.onload = function() {
-            initUI();
-            initCharts();
+        window.onload = function() { 
+            initUI(); 
+            initCharts(); 
         };
     </script>
 </body>
