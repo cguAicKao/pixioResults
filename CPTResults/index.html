@@ -119,23 +119,23 @@
         .academic-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 0.72rem;
+            font-size: 0.6rem;
             border-top: 2.8px solid black; 
             border-bottom: 2.8px solid black;
         }
         .academic-table th {
-            padding: 8px 2px;
+            padding: 8px 1px;
             border-bottom: 1.2px solid black;
             text-transform: uppercase;
             font-weight: bold;
         }
-        .academic-table td { padding: 8px 2px; text-align: center; }
+        .academic-table td { padding: 6px 1px; text-align: center; }
         .dataset-cell {
             text-align: left !important;
             font-weight: bold;
-            padding-left: 10px !important;
+            padding-left: 8px !important;
             border-right: 1px solid #f5f5f5;
-            width: 140px;
+            width: 120px;
         }
     </style>
 </head>
@@ -205,19 +205,53 @@
     </div>
 
     <script>
-        const epochLabels = [0, 20, 40, 60, 80, 100, 120, 140, 160, 180, 200, 220, 240, 260, 280];
+        const epochLabels = [0, 20, 40, 60, 80, 100, 120, 140, 160, 180, 200, 220, 240, 260, 280, 300, 330, 360];
         
-        // 原有趨勢數據
         const rawData = [
-            { id: 'aptos', ds: 'APTOS2019', accBaseModel: '[RETFound MAE-shanghai]', aurocBaseModel: '[Dinov2]', color: '#e41a1c', accBaseline: 0.8433, aurocBaseline: 0.9474, acc: [0.826364, 0.730909, 0.749455, 0.764, 0.773636, 0.779636, 0.781455, 0.786182, 0.794727, 0.791455, 0.793091, 0.794182, 0.800909, 0.797818, 0.804], auroc: [0.940346, 0.865514, 0.891487, 0.899967, 0.902957, 0.903721, 0.908561, 0.913666, 0.918003, 0.918129, 0.920473, 0.922963, 0.924896, 0.923990, 0.925769] },
-            { id: 'glaucoma', ds: 'Glaucoma_fundus', accBaseModel: '[RETFound Dinov2-shanghai]', aurocBaseModel: '[RETFound Dinov2-shanghai]', color: '#377eb8', accBaseline: 0.8649, aurocBaseline: 0.9523, acc: [0.765591, 0.766882, 0.791828, 0.802581, 0.805161, 0.803441, 0.809462, 0.810323, 0.821505, 0.827957, 0.836989, 0.830108, 0.837849, 0.837849, 0.84086], auroc: [0.904554, 0.895792, 0.911465, 0.915687, 0.920466, 0.920773, 0.924393, 0.927334, 0.932660, 0.936286, 0.940167, 0.936967, 0.942412, 0.940237, 0.941567] },
-            { id: 'idrid', ds: 'IDRiD_data', accBaseModel: '[RETFound Dinov2-meh]', aurocBaseModel: '[RETFound Dinov2-meh]', color: '#4daf4a', accBaseline: 0.6155, aurocBaseline: 0.8439, acc: [0.47767, 0.353398, 0.36699, 0.357282, 0.330097, 0.339806, 0.359223, 0.337864, 0.374757, 0.390291, 0.417476, 0.431068, 0.401942, 0.407767, 0.38835], auroc: [0.791426, 0.615098, 0.619168, 0.618080, 0.643761, 0.643964, 0.656198, 0.655680, 0.674047, 0.682849, 0.680471, 0.697842, 0.683613, 0.681873, 0.691782] },
-            { id: 'messidor', ds: 'MESSIDOR2', accBaseModel: '[Dinov3]', aurocBaseModel: '[Dinov3]', color: '#ff7f00', accBaseline: 0.7513, aurocBaseline: 0.9009, acc: [0.722814, 0.577567, 0.60038, 0.59962, 0.605323, 0.604563, 0.613688, 0.612928, 0.619392, 0.618631, 0.618631, 0.624715, 0.631559, 0.634601, 0.623574], auroc: [0.885267, 0.706218, 0.756894, 0.775794, 0.783162, 0.770672, 0.803076, 0.805455, 0.810617, 0.804621, 0.804246, 0.819692, 0.819845, 0.828330, 0.807230] },
-            { id: 'papila', ds: 'PAPILA', accBaseModel: '[RETFound Dinov2-meh]', aurocBaseModel: '[RETFound Dinov2-shanghai]', color: '#984ea3', accBaseline: 0.8388, aurocBaseline: 0.8716, acc: [0.722449, 0.683673, 0.74898, 0.755102, 0.765306, 0.753061, 0.759184, 0.736735, 0.746939, 0.765306, 0.75102, 0.761224, 0.769388, 0.757143, 0.765306], auroc: [0.714491, 0.679847, 0.764615, 0.779164, 0.773438, 0.788725, 0.789943, 0.798123, 0.787767, 0.785884, 0.788243, 0.813329, 0.811845, 0.805484, 0.812752] },
-            { id: 'retina', ds: 'Retina', accBaseModel: '[Dinov3]', aurocBaseModel: '[Dinov3]', color: '#a65628', accBaseline: 0.7182, aurocBaseline: 0.9015, acc: [0.596685, 0.552486, 0.561326, 0.541436, 0.544751, 0.567956, 0.567956, 0.573481, 0.574586, 0.58674, 0.590055, 0.59116, 0.60884, 0.601105, 0.60663], auroc: [0.716094, 0.745743, 0.757908, 0.744672, 0.742351, 0.756892, 0.753262, 0.775418, 0.796551, 0.804612, 0.802210, 0.804531, 0.808509, 0.813491, 0.815272] }
+            { 
+                id: 'aptos', ds: 'APTOS2019', color: '#e41a1c', 
+                accBaseModel: '[RETFound MAE-shanghai]', aurocBaseModel: '[Dinov2]',
+                accBaseline: 0.8433, aurocBaseline: 0.9474, 
+                acc: [0.8263, 0.7309, 0.7494, 0.7640, 0.7736, 0.7796, 0.7814, 0.7861, 0.7947, 0.7914, 0.7930, 0.7941, 0.8009, 0.7978, 0.8040, 0.8025, 0.7998, 0.7996],
+                auroc: [0.9403, 0.8655, 0.8914, 0.8999, 0.9029, 0.9037, 0.9085, 0.9136, 0.9180, 0.9181, 0.9204, 0.9229, 0.9248, 0.9239, 0.9257, 0.9254, 0.9250, 0.9239] 
+            },
+            { 
+                id: 'glaucoma', ds: 'Glaucoma_fundus', color: '#377eb8', 
+                accBaseModel: '[RETFound Dinov2-shanghai]', aurocBaseModel: '[RETFound Dinov2-shanghai]',
+                accBaseline: 0.8649, aurocBaseline: 0.9523, 
+                acc: [0.7655, 0.7668, 0.7918, 0.8025, 0.8051, 0.8034, 0.8094, 0.8103, 0.8215, 0.8279, 0.8369, 0.8301, 0.8378, 0.8378, 0.8408, 0.8430, 0.8412, 0.8438],
+                auroc: [0.9045, 0.8957, 0.9114, 0.9156, 0.9204, 0.9207, 0.9243, 0.9273, 0.9326, 0.9362, 0.9401, 0.9369, 0.9424, 0.9402, 0.9415, 0.9437, 0.9431, 0.9437] 
+            },
+            { 
+                id: 'idrid', ds: 'IDRiD_data', color: '#4daf4a', 
+                accBaseModel: '[RETFound Dinov2-meh]', aurocBaseModel: '[RETFound Dinov2-meh]',
+                accBaseline: 0.6155, aurocBaseline: 0.8439, 
+                acc: [0.4776, 0.3533, 0.3669, 0.3572, 0.3300, 0.3398, 0.3592, 0.3378, 0.3747, 0.3902, 0.4174, 0.4310, 0.4019, 0.4077, 0.3883, 0.4174, 0.4330, 0.4563],
+                auroc: [0.7914, 0.6150, 0.6191, 0.6180, 0.6437, 0.6439, 0.6561, 0.6556, 0.6740, 0.6828, 0.6804, 0.6978, 0.6836, 0.6818, 0.6917, 0.7122, 0.7070, 0.7170] 
+            },
+            { 
+                id: 'messidor', ds: 'MESSIDOR2', color: '#ff7f00', 
+                accBaseModel: '[Dinov3]', aurocBaseModel: '[Dinov3]',
+                accBaseline: 0.7513, aurocBaseline: 0.9009, 
+                acc: [0.7228, 0.5775, 0.6003, 0.5996, 0.6053, 0.6045, 0.6136, 0.6129, 0.6193, 0.6186, 0.6186, 0.6247, 0.6315, 0.6346, 0.6235, 0.6285, 0.6247, 0.6296],
+                auroc: [0.8852, 0.7062, 0.7568, 0.7757, 0.7831, 0.7706, 0.8030, 0.8054, 0.8106, 0.8046, 0.8042, 0.8196, 0.8198, 0.8283, 0.8072, 0.8230, 0.8249, 0.8216] 
+            },
+            { 
+                id: 'papila', ds: 'PAPILA', color: '#984ea3', 
+                accBaseModel: '[RETFound Dinov2-meh]', aurocBaseModel: '[RETFound Dinov2-shanghai]',
+                accBaseline: 0.8388, aurocBaseline: 0.8716, 
+                acc: [0.7224, 0.6836, 0.7489, 0.7551, 0.7653, 0.7530, 0.7591, 0.7367, 0.7469, 0.7653, 0.7510, 0.7612, 0.7693, 0.7571, 0.7653, 0.7469, 0.7693, 0.7714],
+                auroc: [0.7144, 0.6798, 0.7646, 0.7791, 0.7734, 0.7887, 0.7899, 0.7981, 0.7877, 0.7858, 0.7882, 0.8133, 0.8118, 0.8054, 0.8127, 0.8050, 0.8019, 0.7954] 
+            },
+            { 
+                id: 'retina', ds: 'Retina', color: '#a65628', 
+                accBaseModel: '[Dinov3]', aurocBaseModel: '[Dinov3]',
+                accBaseline: 0.7182, aurocBaseline: 0.9015, 
+                acc: [0.5966, 0.5524, 0.5613, 0.5414, 0.5447, 0.5679, 0.5679, 0.5734, 0.5745, 0.5867, 0.5900, 0.5911, 0.6088, 0.6011, 0.6066, 0.6044, 0.6055, 0.6022],
+                auroc: [0.7160, 0.7457, 0.7579, 0.7446, 0.7423, 0.7568, 0.7532, 0.7754, 0.7965, 0.8046, 0.8022, 0.8045, 0.8085, 0.8134, 0.8152, 0.8196, 0.8114, 0.8120] 
+            }
         ];
 
-        // 新增：圖片中的數據集統計
         const statsData = {
             labels: ['APTOS2019', 'Glaucoma Fundus', 'IDRiD Data', 'MESSIDOR2', 'PAPILA', 'Retina'],
             training: [2048, 861, 329, 972, 311, 336],
@@ -256,7 +290,7 @@
 
                 let row1 = document.createElement('tr');
                 let cell1 = `<td class="dataset-cell">${d.ds}</td>`;
-                d.acc.forEach(val => cell1 += `<td>${val.toFixed(4)}</td>`);
+                d.acc.forEach(val => cell1 += `<td>${val.toFixed(3)}</td>`);
                 row1.innerHTML = cell1; t1Body.appendChild(row1);
 
                 let row2 = document.createElement('tr');
@@ -289,15 +323,14 @@
             const accDs = [];
             const aurocDs = [];
             rawData.forEach((d, i) => {
-                accDs.push({ label: d.ds, data: d.acc, borderColor: d.color, backgroundColor: d.color, borderWidth: 2, pointStyle: markers[i], pointRadius: 4, tension: 0 });
+                accDs.push({ label: d.ds, data: d.acc, borderColor: d.color, backgroundColor: d.color, borderWidth: 2, pointStyle: markers[i], pointRadius: 4, tension: 0.1 });
                 accDs.push({ label: `${d.ds}_base`, data: Array(epochLabels.length).fill(d.accBaseline), borderColor: d.color, borderWidth: 1, borderDash: [5, 5], pointRadius: 0 });
-                aurocDs.push({ label: d.ds, data: d.auroc, borderColor: d.color, backgroundColor: d.color, borderWidth: 2, pointStyle: markers[i], pointRadius: 4, tension: 0 });
+                aurocDs.push({ label: d.ds, data: d.auroc, borderColor: d.color, backgroundColor: d.color, borderWidth: 2.5, pointStyle: markers[i], pointRadius: 5, tension: 0.1 });
                 aurocDs.push({ label: `${d.ds}_base`, data: Array(epochLabels.length).fill(d.aurocBaseline > 1 ? d.aurocBaseline/100 : d.aurocBaseline), borderColor: d.color, borderWidth: 1, borderDash: [5, 5], pointRadius: 0 });
             });
             charts.acc = new Chart(document.getElementById('accuracyChart'), { type: 'line', data: { labels: epochLabels, datasets: accDs }, options: opt('Mean Accuracy', 0.3, 0.95) });
             charts.auroc = new Chart(document.getElementById('aurocChart'), { type: 'line', data: { labels: epochLabels, datasets: aurocDs }, options: opt('Mean AUROC Score', 0.6, 1.0) });
 
-            // 新增：數據統計疊加長條圖
             new Chart(document.getElementById('distributionChart'), {
                 type: 'bar',
                 data: {
@@ -309,12 +342,8 @@
                     ]
                 },
                 options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { position: 'top', labels: { font: { weight: 'bold' } } },
-                        tooltip: { mode: 'index', intersect: false }
-                    },
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { position: 'top', labels: { font: { weight: 'bold' } } } },
                     scales: {
                         x: { stacked: true, grid: { display: false }, ticks: { font: { weight: 'bold' } } },
                         y: { stacked: true, beginAtZero: true, title: { display: true, text: 'Number of Samples', font: { weight: 'bold' } } }
@@ -323,10 +352,7 @@
             });
         }
 
-        window.onload = function() { 
-            initUI(); 
-            initCharts(); 
-        };
+        window.onload = function() { initUI(); initCharts(); };
     </script>
 </body>
 </html>
