@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pixio 蒸餾訓練性能分析 (Accuracy & AUROC)</title>
+    <title>模型訓練性能全週期分析 (Accuracy & AUROC)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -82,11 +82,35 @@
         <!-- Header -->
         <header class="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4 border-b-2 border-slate-200 pb-6">
             <div>
-                <h1 class="text-3xl font-bold text-slate-900">Pixio 蒸餾訓練性能分析</h1>
+                <h1 class="text-3xl font-bold text-slate-900">模型訓練性能深度監控</h1>
                 <p class="text-slate-500">指標對比：Accuracy & AUROC (含基準對照組)</p>
             </div>
-            <div class="text-xs text-slate-400 font-mono bg-white px-3 py-1 rounded-full shadow-sm border">Updated: 2026-03-26</div>
+            <div class="text-xs text-slate-400 font-mono bg-white px-3 py-1 rounded-full shadow-sm border">Updated: 2024-DR-V12</div>
         </header>
+
+        <!-- Stats Overview -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="card p-6 border-l-4 border-blue-500">
+                <p class="text-xs text-slate-500 font-bold uppercase tracking-wider">APTOS 狀態</p>
+                <p class="text-3xl font-bold text-slate-800">E160</p>
+                <p class="text-xs text-slate-400 mt-2 font-medium">持續逼近 SOTA 基準</p>
+            </div>
+            <div class="card p-6 border-l-4 border-emerald-500">
+                <p class="text-xs text-emerald-500 font-bold uppercase tracking-wider">Glaucoma 最高值</p>
+                <p class="text-3xl font-bold text-slate-800">0.8387</p>
+                <p class="text-xs text-slate-400 mt-2">Accuracy 穩定增長</p>
+            </div>
+            <div class="card p-6 border-l-4 border-red-500">
+                <p class="text-xs text-red-600 font-bold uppercase tracking-wider">IDRiD 狀態</p>
+                <p class="text-3xl font-bold text-slate-800">0.8149</p>
+                <p class="text-xs text-slate-400 mt-2">AUROC 表現穩定</p>
+            </div>
+            <div class="card p-6 border-l-4 border-indigo-500">
+                <p class="text-xs text-indigo-500 font-bold uppercase tracking-wider">數據矩陣</p>
+                <p class="text-3xl font-bold text-slate-800">基準更新</p>
+                <p class="text-xs text-slate-400 mt-2">已同步最新 RETFound 數據</p>
+            </div>
+        </div>
 
         <!-- Main Chart Section -->
         <div class="card p-6 mb-8">
@@ -100,7 +124,7 @@
             <div style="height: 450px;">
                 <canvas id="evolutionChart"></canvas>
             </div>
-            <p class="legend-tip">💡 提示：線圖維持多彩呈現；點擊下方圖例標籤可連動隱藏數據集與對應基準</p>
+            <p class="legend-tip">💡 提示：實線為訓練過程，虛線為基準對照組。點擊圖例可過濾特定數據集及其對應基準。</p>
         </div>
 
         <!-- Data Tables Section (Accuracy) -->
@@ -161,14 +185,6 @@
                 "PAPILA": [0.7224, 0.7673, 0.7735, 0.7592, 0.7592, 0.7673, 0.7694, 0.7653, 0.7633],
                 "Retina": [0.5967, 0.7182, 0.7127, 0.7304, 0.7249, 0.7215, 0.7204, 0.7050, 0.7127]
             },
-            baselines: {
-                "APTOS [MAE]": 0.8433,
-                "Glaucoma [Dinov2-SH]": 0.8649,
-                "IDRiD [Dinov3]": 0.6155,
-                "MESSIDOR2 [Dinov2]": 0.7513,
-                "PAPILA [Dinov2]": 0.8388,
-                "Retina [Dinov3]": 0.7182
-            },
             auroc: {
                 "APTOS2019": [0.9403, 0.9475, 0.9458, 0.9448, 0.9447, 0.9440, 0.9445, 0.9467, 0.9458],
                 "Glaucoma": [0.9046, 0.9303, 0.9304, 0.9341, 0.9369, 0.9310, 0.9356, 0.9383, 0.9400],
@@ -176,6 +192,24 @@
                 "MESSIDOR2": [0.8850, 0.8916, 0.8913, 0.8922, 0.8940, 0.8909, 0.8938, 0.8919, 0.8896],
                 "PAPILA": [0.7145, 0.8485, 0.8438, 0.8460, 0.8433, 0.8369, 0.8511, 0.8400, 0.8431],
                 "Retina": [0.7161, 0.8970, 0.9005, 0.8998, 0.9010, 0.9017, 0.8947, 0.8874, 0.8981]
+            },
+            baselines: {
+                accuracy: {
+                    "APTOS [RETFound Dinov2]": 0.8524,
+                    "Glaucoma [Dinov2 SH]": 0.8692,
+                    "IDRiD [RETFound Dinov2]": 0.6563,
+                    "MESSIDOR2 [RETFound Dinov2]": 0.7707,
+                    "PAPILA [RETFound Dinov2]": 0.8408,
+                    "Retina [RETFound Dinov2]": 0.7304
+                },
+                auroc: {
+                    "APTOS [Dinov2]": 0.9519,
+                    "Glaucoma [Dinov2 SH]": 0.9552,
+                    "IDRiD [RETFound Dinov2]": 0.8541,
+                    "MESSIDOR2 [Dinov3]": 0.9089,
+                    "PAPILA [RETFound Dinov2]": 0.8797,
+                    "Retina [Dinov3]": 0.9015
+                }
             }
         };
 
@@ -188,18 +222,20 @@
             "Retina": '#64748b'
         };
 
+        // Mapping for logical grouping in legend (Dataset + its Baseline)
         const groupMapping = {
-            "APTOS": ["APTOS2019", "APTOS [MAE]"],
-            "Glaucoma": ["Glaucoma", "Glaucoma [Dinov2-SH]"],
-            "IDRiD": ["IDRiD", "IDRiD [Dinov3]"],
-            "MESSIDOR2": ["MESSIDOR2", "MESSIDOR2 [Dinov2]"],
-            "PAPILA": ["PAPILA", "PAPILA [Dinov2]"],
-            "Retina": ["Retina", "Retina [Dinov3]"]
+            "APTOS": ["APTOS2019", "APTOS [RETFound Dinov2]", "APTOS [Dinov2]"],
+            "Glaucoma": ["Glaucoma", "Glaucoma [Dinov2 SH]"],
+            "IDRiD": ["IDRiD", "IDRiD [RETFound Dinov2]"],
+            "MESSIDOR2": ["MESSIDOR2", "MESSIDOR2 [RETFound Dinov2]", "MESSIDOR2 [Dinov3]"],
+            "PAPILA": ["PAPILA", "PAPILA [RETFound Dinov2]"],
+            "Retina": ["Retina", "Retina [RETFound Dinov2]", "Retina [Dinov3]"]
         };
 
         function renderEvolutionChart(type) {
             const chartDatasets = [];
             
+            // 1. Add Training Data (Solid Lines)
             Object.keys(dataConfig[type]).forEach(name => {
                 chartDatasets.push({
                     label: name,
@@ -209,24 +245,27 @@
                     borderWidth: name === 'IDRiD' ? 4 : 2.5,
                     pointRadius: 4,
                     tension: 0.25,
-                    fill: false
+                    fill: false,
+                    order: 1
                 });
             });
 
-            if (type === 'accuracy') {
-                Object.keys(dataConfig.baselines).forEach(name => {
-                    const baseKey = name.split(' ')[0];
-                    chartDatasets.push({
-                        label: name,
-                        data: Array(9).fill(dataConfig.baselines[name]),
-                        borderColor: colors[baseKey] || '#ccc',
-                        borderDash: [5, 5],
-                        borderWidth: 1.5,
-                        pointRadius: 0,
-                        fill: false
-                    });
+            // 2. Add Baseline Data (Dashed Lines)
+            const currentBaselines = dataConfig.baselines[type];
+            Object.keys(currentBaselines).forEach(name => {
+                // Find matching color based on the first word of the label
+                const baseKey = name.split(' ')[0];
+                chartDatasets.push({
+                    label: name,
+                    data: Array(9).fill(currentBaselines[name]),
+                    borderColor: colors[baseKey] || '#cbd5e1',
+                    borderDash: [5, 5],
+                    borderWidth: 1.5,
+                    pointRadius: 0,
+                    fill: false,
+                    order: 2
                 });
-            }
+            });
 
             if (evolutionChart) evolutionChart.destroy();
 
@@ -240,17 +279,23 @@
                     plugins: {
                         legend: { 
                             position: 'bottom',
-                            labels: { boxWidth: 12, font: { size: 11 } },
+                            labels: { 
+                                boxWidth: 12, 
+                                font: { size: 10 },
+                                padding: 15
+                            },
                             onClick: function(e, legendItem, legend) {
                                 const chart = legend.chart;
                                 const clickedLabel = legendItem.text;
                                 let targetGroup = [];
+                                
                                 for (const key in groupMapping) {
                                     if (clickedLabel.includes(key)) {
                                         targetGroup = groupMapping[key];
                                         break;
                                     }
                                 }
+                                
                                 if (targetGroup.length > 0) {
                                     const isVisible = !chart.isDatasetVisible(legendItem.datasetIndex);
                                     chart.data.datasets.forEach((dataset, index) => {
@@ -263,11 +308,21 @@
                                     chart.isDatasetVisible(index) ? chart.hide(index) : chart.show(index);
                                 }
                             }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) label += ': ';
+                                    if (context.parsed.y !== null) label += context.parsed.y.toFixed(4);
+                                    return label;
+                                }
+                            }
                         }
                     },
                     scales: {
                         y: { 
-                            min: type === 'accuracy' ? 0.4 : 0.7,
+                            min: type === 'accuracy' ? 0.45 : 0.7,
                             max: type === 'accuracy' ? 0.9 : 1.0,
                             grid: { color: '#f1f5f9' },
                             title: { display: true, text: type === 'accuracy' ? 'Accuracy Mean' : 'AUROC Mean' }
@@ -284,30 +339,31 @@
             const accBody = document.getElementById('accTableBody');
             const aurocBody = document.getElementById('aurocTableBody');
 
-            // Header
+            // Header labels
             labels.forEach(e => {
-                accHeader.innerHTML += `<th>${e}</th>`;
-                aurocHeader.innerHTML += `<th>${e}</th>`;
+                const thAcc = document.createElement('th');
+                thAcc.textContent = e;
+                accHeader.appendChild(thAcc);
+                
+                const thAuroc = document.createElement('th');
+                thAuroc.textContent = e;
+                aurocHeader.appendChild(thAuroc);
             });
 
-            // Accuracy Body
+            // Accuracy Rows
             Object.keys(dataConfig.accuracy).forEach(name => {
                 const vals = dataConfig.accuracy[name];
                 let row = `<tr><td class="dataset-name-cell">${name}</td>`;
-                vals.forEach((v) => {
-                    row += `<td>${v.toFixed(4)}</td>`;
-                });
+                vals.forEach(v => row += `<td>${v.toFixed(4)}</td>`);
                 row += '</tr>';
                 accBody.innerHTML += row;
             });
 
-            // AUROC Body
+            // AUROC Rows
             Object.keys(dataConfig.auroc).forEach(name => {
                 const vals = dataConfig.auroc[name];
                 let row = `<tr><td class="dataset-name-cell">${name}</td>`;
-                vals.forEach((v) => {
-                    row += `<td>${v.toFixed(4)}</td>`;
-                });
+                vals.forEach(v => row += `<td>${v.toFixed(4)}</td>`);
                 row += '</tr>';
                 aurocBody.innerHTML += row;
             });
