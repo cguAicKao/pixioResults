@@ -142,7 +142,7 @@
 <body>
     <div class="paper-container">
         <div class="mb-10 border-b-2 border-black pb-4">
-            <h1 class="text-2xl font-bold uppercase tracking-wide">ViT-L continue 評估與數據統計</h1>
+            <h1 class="text-2xl font-bold uppercase tracking-wide">模型收斂性評估與數據統計</h1>
         </div>
 
         <!-- 趨勢圖區域 -->
@@ -210,43 +210,43 @@
         const rawData = [
             { 
                 id: 'aptos', ds: 'APTOS2019', color: '#e41a1c', 
-                accBaseModel: '[RETFound MAE-shanghai]', aurocBaseModel: '[Dinov2]',
-                accBaseline: 0.8433, aurocBaseline: 0.9474, 
+                accBaseModel: '[RETFound Dinov2 meh]', aurocBaseModel: '[Dinov2]',
+                accBaseline: 0.8524, aurocBaseline: 0.9519, 
                 acc: [0.8263, 0.7309, 0.7494, 0.7640, 0.7736, 0.7796, 0.7814, 0.7861, 0.7947, 0.7914, 0.7930, 0.7941, 0.8009, 0.7978, 0.8040, 0.8025, 0.7998, 0.7996],
                 auroc: [0.9403, 0.8655, 0.8914, 0.8999, 0.9029, 0.9037, 0.9085, 0.9136, 0.9180, 0.9181, 0.9204, 0.9229, 0.9248, 0.9239, 0.9257, 0.9254, 0.9250, 0.9239] 
             },
             { 
                 id: 'glaucoma', ds: 'Glaucoma_fundus', color: '#377eb8', 
-                accBaseModel: '[RETFound Dinov2-shanghai]', aurocBaseModel: '[RETFound Dinov2-shanghai]',
-                accBaseline: 0.8649, aurocBaseline: 0.9523, 
+                accBaseModel: '[RETFound Dinov2 shanghai]', aurocBaseModel: '[RETFound Dinov2 shanghai]',
+                accBaseline: 0.8692, aurocBaseline: 0.9552, 
                 acc: [0.7655, 0.7668, 0.7918, 0.8025, 0.8051, 0.8034, 0.8094, 0.8103, 0.8215, 0.8279, 0.8369, 0.8301, 0.8378, 0.8378, 0.8408, 0.8430, 0.8412, 0.8438],
                 auroc: [0.9045, 0.8957, 0.9114, 0.9156, 0.9204, 0.9207, 0.9243, 0.9273, 0.9326, 0.9362, 0.9401, 0.9369, 0.9424, 0.9402, 0.9415, 0.9437, 0.9431, 0.9437] 
             },
             { 
                 id: 'idrid', ds: 'IDRiD_data', color: '#4daf4a', 
-                accBaseModel: '[RETFound Dinov2-meh]', aurocBaseModel: '[RETFound Dinov2-meh]',
-                accBaseline: 0.6155, aurocBaseline: 0.8439, 
+                accBaseModel: '[RETFound Dinov2 meh]', aurocBaseModel: '[RETFound Dinov2 meh]',
+                accBaseline: 0.6563, aurocBaseline: 0.8541, 
                 acc: [0.4776, 0.3533, 0.3669, 0.3572, 0.3300, 0.3398, 0.3592, 0.3378, 0.3747, 0.3902, 0.4174, 0.4310, 0.4019, 0.4077, 0.3883, 0.4174, 0.4330, 0.4563],
                 auroc: [0.7914, 0.6150, 0.6191, 0.6180, 0.6437, 0.6439, 0.6561, 0.6556, 0.6740, 0.6828, 0.6804, 0.6978, 0.6836, 0.6818, 0.6917, 0.7122, 0.7070, 0.7170] 
             },
             { 
                 id: 'messidor', ds: 'MESSIDOR2', color: '#ff7f00', 
-                accBaseModel: '[Dinov3]', aurocBaseModel: '[Dinov3]',
-                accBaseline: 0.7513, aurocBaseline: 0.9009, 
+                accBaseModel: '[RETFound Dinov2 meh]', aurocBaseModel: '[Dinov3]',
+                accBaseline: 0.7707, aurocBaseline: 0.9089, 
                 acc: [0.7228, 0.5775, 0.6003, 0.5996, 0.6053, 0.6045, 0.6136, 0.6129, 0.6193, 0.6186, 0.6186, 0.6247, 0.6315, 0.6346, 0.6235, 0.6285, 0.6247, 0.6296],
                 auroc: [0.8852, 0.7062, 0.7568, 0.7757, 0.7831, 0.7706, 0.8030, 0.8054, 0.8106, 0.8046, 0.8042, 0.8196, 0.8198, 0.8283, 0.8072, 0.8230, 0.8249, 0.8216] 
             },
             { 
                 id: 'papila', ds: 'PAPILA', color: '#984ea3', 
-                accBaseModel: '[RETFound Dinov2-meh]', aurocBaseModel: '[RETFound Dinov2-shanghai]',
-                accBaseline: 0.8388, aurocBaseline: 0.8716, 
+                accBaseModel: '[RETFound Dinov2 meh]', aurocBaseModel: '[RETFound Dinov2 meh]',
+                accBaseline: 0.8408, aurocBaseline: 0.8797, 
                 acc: [0.7224, 0.6836, 0.7489, 0.7551, 0.7653, 0.7530, 0.7591, 0.7367, 0.7469, 0.7653, 0.7510, 0.7612, 0.7693, 0.7571, 0.7653, 0.7469, 0.7693, 0.7714],
                 auroc: [0.7144, 0.6798, 0.7646, 0.7791, 0.7734, 0.7887, 0.7899, 0.7981, 0.7877, 0.7858, 0.7882, 0.8133, 0.8118, 0.8054, 0.8127, 0.8050, 0.8019, 0.7954] 
             },
             { 
                 id: 'retina', ds: 'Retina', color: '#a65628', 
-                accBaseModel: '[Dinov3]', aurocBaseModel: '[Dinov3]',
-                accBaseline: 0.7182, aurocBaseline: 0.9015, 
+                accBaseModel: '[RETFound Dinov2 meh]', aurocBaseModel: '[Dinov3]',
+                accBaseline: 0.7304, aurocBaseline: 0.9015, 
                 acc: [0.5966, 0.5524, 0.5613, 0.5414, 0.5447, 0.5679, 0.5679, 0.5734, 0.5745, 0.5867, 0.5900, 0.5911, 0.6088, 0.6011, 0.6066, 0.6044, 0.6055, 0.6022],
                 auroc: [0.7160, 0.7457, 0.7579, 0.7446, 0.7423, 0.7568, 0.7532, 0.7754, 0.7965, 0.8046, 0.8022, 0.8045, 0.8085, 0.8134, 0.8152, 0.8196, 0.8114, 0.8120] 
             }
@@ -328,7 +328,7 @@
                 aurocDs.push({ label: d.ds, data: d.auroc, borderColor: d.color, backgroundColor: d.color, borderWidth: 2.5, pointStyle: markers[i], pointRadius: 5, tension: 0.1 });
                 aurocDs.push({ label: `${d.ds}_base`, data: Array(epochLabels.length).fill(d.aurocBaseline > 1 ? d.aurocBaseline/100 : d.aurocBaseline), borderColor: d.color, borderWidth: 1, borderDash: [5, 5], pointRadius: 0 });
             });
-            charts.acc = new Chart(document.getElementById('accuracyChart'), { type: 'line', data: { labels: epochLabels, datasets: accDs }, options: opt('Mean Accuracy', 0.3, 0.95) });
+            charts.acc = new Chart(document.getElementById('accuracyChart'), { type: 'line', data: { labels: epochLabels, datasets: accDs }, options: opt('Mean Accuracy', 0.3, 1.0) });
             charts.auroc = new Chart(document.getElementById('aurocChart'), { type: 'line', data: { labels: epochLabels, datasets: aurocDs }, options: opt('Mean AUROC Score', 0.6, 1.0) });
 
             new Chart(document.getElementById('distributionChart'), {
