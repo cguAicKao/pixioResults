@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>模型訓練結果可視化</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .chart-container {
+            position: relative;
+            margin: auto;
+            height: 300px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 p-4 md:p-8">
+    <div class="max-w-6xl mx-auto">
+        <header class="mb-8 text-center">
+            <h1 class="text-3xl font-bold text-gray-800">模型效能對比分析 (Mean ± Std)</h1>
+            <p class="text-gray-600 mt-2">比較 freeze-enc10 與 freeze-enc30 在不同 Epoch 的表現</p>
+        </header>
+
+        <div id="charts-grid" class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- 圖表會由 JavaScript 動態生成 -->
+        </div>
+    </div>
+
+    <script>
+        const data = {
+            "APTOS2019": {
+                "enc10": { mean: [0.8302, 0.8356, 0.8296], std: [0.0085, 0.0052, 0.0077] },
+                "enc30": { mean: [0.8336, 0.8395, 0.8433], std: [0.0058, 0.0063, 0.0033] }
+            },
+            "Glaucoma_fundus": {
+                "enc10": { mean: [0.8353, 0.8275, 0.8318], std: [0.0056, 0.0081, 0.0132] },
+                "enc30": { mean: [0.8228, 0.8288, 0.8404], std: [0.0113, 0.0122, 0.0051] }
+            },
+            "IDRiD_data": {
+                "enc10": { mean: [0.5068, 0.5204, 0.4816], std: [0.0397, 0.0280, 0.0722] },
+                "enc30": { mean: [0.4777, 0.4913, 0.4990], std: [0.0294, 0.0624, 0.0304] }
+            },
+            "MESSIDOR2": {
+                "enc10": { mean: [0.6875, 0.7114, 0.7004], std: [0.0129, 0.0068, 0.0108] },
+                "enc30": { mean: [0.7030, 0.7087, 0.7122], std: [0.0092, 0.0127, 0.0072] }
+            },
+            "PAPILA": {
+                "enc10": { mean: [0.7694, 0.7531, 0.7735], std: [0.0303, 0.0085, 0.0233] },
+                "enc30": { mean: [0.7857, 0.7714, 0.7612], std: [0.0250, 0.0199, 0.0212] }
+            },
+            "Retina": {
+                "enc10": { mean: [0.6210, 0.6099, 0.5978], std: [0.0223, 0.0415, 0.0277] },
+                "enc30": { mean: [0.6088, 0.6099, 0.5934], std: [0.0072, 0.0201, 0.0289] }
+            }
+        };
+
+        const epochs = ['Epoch 10', 'Epoch 20', 'Epoch 30'];
+        const grid = document.getElementById('charts-grid');
+
+        Object.keys(data).forEach(datasetName => {
+            // 建立卡片
+            const card = document.createElement('div');
+            card.className = 'bg-white p-6 rounded-xl shadow-sm border border-gray-200';
+            card.innerHTML = `
+                <h2 class="text-xl font-bold mb-4 text-gray-700 border-b pb-2">${datasetName}</h2>
+                <div class="chart-container">
+                    <canvas id="chart-${datasetName}"></canvas>
+                </div>
+            `;
+            grid.appendChild(card);
+
+            const ctx = document.getElementById(`chart-${datasetName}`).getContext('2d');
+            const datasetInfo = data[datasetName];
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: epochs,
+                    datasets: [
+                        {
+                            label: 'Freeze-Enc10 (Mean)',
+                            data: datasetInfo.enc10.mean,
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            backgroundColor: 'rgba(54, 162, 235, 0.1)',
+                            fill: false,
+                            tension: 0.1,
+                            pointStyle: 'circle',
+                            pointRadius: 6
+                        },
+                        {
+                            label: 'Freeze-Enc30 (Mean)',
+                            data: datasetInfo.enc30.mean,
+                            borderColor: 'rgba(255, 99, 132, 1)',
+                            backgroundColor: 'rgba(255, 99, 132, 0.1)',
+                            fill: false,
+                            tension: 0.1,
+                            pointStyle: 'rect',
+                            pointRadius: 6
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const ds = context.datasetIndex === 0 ? 'enc10' : 'enc30';
+                                    const mean = datasetInfo[ds].mean[context.dataIndex];
+                                    const std = datasetInfo[ds].std[context.dataIndex];
+                                    return `${context.dataset.label}: ${mean.toFixed(4)} ± ${std.toFixed(4)}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            title: { display: true, text: 'Accuracy / Metric Value' }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+
+
