@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pixio 實驗結果學術圖表 (Enhanced Layout)</title>
+    <title>Pixio 實驗結果學術圖表 (Goal Updated)</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -45,7 +45,7 @@
         }
         .custom-legend {
             flex-shrink: 0;
-            width: 320px;
+            width: 340px;
             padding-top: 20px;
             padding-left: 1.5rem;
             border-left: 1px solid #eee;
@@ -148,13 +148,13 @@
                     <div class="chart-box">
                         <canvas id="accuracyChart"></canvas>
                     </div>
-                    <p class="caption">圖 1. (a) 平均準確度趨勢 (Mean Accuracy - Baseline vs. Freeze-Enc)</p>
+                    <p class="caption">圖 1. (a) 平均準確度趨勢 (Mean Accuracy)</p>
                 </div>
                 <div class="flex flex-col">
                     <div class="chart-box">
                         <canvas id="aurocChart"></canvas>
                     </div>
-                    <p class="caption">圖 1. (b) 平均 AUROC 趨勢 (Mean AUROC - Baseline vs. Freeze-Enc)</p>
+                    <p class="caption">圖 1. (b) 平均 AUROC 趨勢 (Mean AUROC)</p>
                 </div>
             </div>
 
@@ -172,7 +172,7 @@
 
         <!-- 表格區域 -->
         <div class="mt-10">
-            <p class="text-sm font-bold mb-4 italic">表 1. 各數據集準確度匯總 (包含 Freeze-Enc10 實驗)。</p>
+            <p class="text-sm font-bold mb-4 italic">表 1. 各數據集準確度 (Accuracy) 數值匯總。</p>
             <div class="overflow-x-auto">
                 <table class="academic-table">
                     <thead><tr id="accHeader"><th class="dataset-cell">Dataset / Model</th></tr></thead>
@@ -182,7 +182,7 @@
         </div>
 
         <div class="mt-16">
-            <p class="text-sm font-bold mb-4 italic">表 2. 各數據集 AUROC 匯總 (包含 Freeze-Enc 實驗)。</p>
+            <p class="text-sm font-bold mb-4 italic">表 2. 各數據集 AUROC 數值匯總。</p>
             <div class="overflow-x-auto">
                 <table class="academic-table">
                     <thead><tr id="aurocHeader"><th class="dataset-cell">Dataset / Model</th></tr></thead>
@@ -191,7 +191,6 @@
             </div>
         </div>
 
-        <!-- 數據統計長條圖區域 -->
         <div class="mt-24 pt-10 border-t-2 border-gray-200">
             <div class="dist-chart-box">
                 <canvas id="distributionChart"></canvas>
@@ -203,9 +202,6 @@
     <script>
         const epochLabels = [0, 10, 20, 30, 40, 60, 80, 100, 120, 140, 160, 180, 200, 220, 240, 260, 280, 300, 330, 360];
         
-        // 映射舊索引到新 epochLabels 的位置
-        // 舊：[0, 20, 40, 60, 80, 100, 120, 140, 160, 180, 200, 220, 240, 260, 280, 300, 330, 360]
-        // 我們需要把原始數據補零或對齊到新的 labels (多了 10, 30)
         function alignData(origAcc) {
             const aligned = Array(epochLabels.length).fill(null);
             aligned[0] = origAcc[0]; // E0
@@ -306,54 +302,48 @@
             });
 
             rawData.forEach((d, i) => {
-                // Legend
+                // Legend for Accuracy
                 const accItem = document.createElement('div');
                 accItem.className = 'legend-item';
                 accItem.onclick = () => toggleDataset('acc', d.ds, accItem);
                 accItem.innerHTML = `
                     <span class="dataset-name">${d.ds}</span>
-                    <div class="legend-visual-row"><div class="line-solid" style="background-color:${d.color}"></div><div class="model-tag"><span class="tag-prefix">Base:</span> ${d.accBaseModel}</div></div>
-                    <div class="legend-visual-row"><div class="line-dashed" style="border-color:${d.color}"></div><div class="model-tag"><span class="tag-prefix">Baseline:</span> Value line</div></div>
-                    <div class="legend-visual-row"><div class="line-dotted" style="border-color:${d.color}"></div><div class="model-tag"><span class="tag-prefix">Freeze-Enc:</span> freeze-enc10-epoch-10</div></div>
+                    <div class="legend-visual-row"><div class="line-solid" style="background-color:${d.color}"></div><div class="model-tag"><span class="tag-prefix">Base:</span> </div></div>
+                    <div class="legend-visual-row"><div class="line-dashed" style="border-color:${d.color}"></div><div class="model-tag"><span class="tag-prefix">Goal:</span> ${d.accBaseModel}</div></div>
+                    <div class="legend-visual-row"><div class="line-dotted" style="border-color:${d.color}"></div><div class="model-tag"><span class="tag-prefix">Freeze-Enc:</span> freeze-enc10</div></div>
                 `;
                 accLegend.appendChild(accItem);
 
+                // Legend for AUROC
                 const aurocItem = document.createElement('div');
                 aurocItem.className = 'legend-item';
                 aurocItem.onclick = () => toggleDataset('auroc', d.ds, aurocItem);
                 aurocItem.innerHTML = `
                     <span class="dataset-name">${d.ds}</span>
-                    <div class="legend-visual-row"><div class="line-solid" style="background-color:${d.color}"></div><div class="model-tag"><span class="tag-prefix">Base:</span> ${d.aurocBaseModel}</div></div>
-                    <div class="legend-visual-row"><div class="line-dashed" style="border-color:${d.color}"></div><div class="model-tag"><span class="tag-prefix">Baseline:</span> Value line</div></div>
-                    <div class="legend-visual-row"><div class="line-dotted" style="border-color:${d.color}"></div><div class="model-tag"><span class="tag-prefix">Freeze-Enc:</span> freeze-enc10-epoch-10</div></div>
+                    <div class="legend-visual-row"><div class="line-solid" style="background-color:${d.color}"></div><div class="model-tag"><span class="tag-prefix">Base:</span> </div></div>
+                    <div class="legend-visual-row"><div class="line-dashed" style="border-color:${d.color}"></div><div class="model-tag"><span class="tag-prefix">Goal:</span> ${d.aurocBaseModel}</div></div>
+                    <div class="legend-visual-row"><div class="line-dotted" style="border-color:${d.color}"></div><div class="model-tag"><span class="tag-prefix">Freeze-Enc:</span> freeze-enc10</div></div>
                 `;
                 aurocLegend.appendChild(aurocItem);
 
-                // Table 1 - Acc
+                // Table Rows
                 let row1 = document.createElement('tr');
-                let cell1 = `<td class="dataset-cell">${d.ds} (Main)</td>`;
-                d.acc.forEach(val => cell1 += `<td>${val ? val.toFixed(3) : '-'}</td>`);
-                row1.innerHTML = cell1; t1Body.appendChild(row1);
+                row1.innerHTML = `<td class="dataset-cell">${d.ds} (Main)</td>` + d.acc.map(v => `<td>${v ? v.toFixed(3) : '-'}</td>`).join('');
+                t1Body.appendChild(row1);
 
                 let row1f = document.createElement('tr');
                 row1f.className = 'freeze-cell';
-                let cell1f = `<td class="dataset-cell">${d.ds} (Freeze-Enc)</td>`;
-                const fAccArr = getFreezeDataArray(d.accFreeze);
-                fAccArr.forEach(val => cell1f += `<td>${val ? val.toFixed(3) : ''}</td>`);
-                row1f.innerHTML = cell1f; t1Body.appendChild(row1f);
+                row1f.innerHTML = `<td class="dataset-cell">${d.ds} (Freeze)</td>` + getFreezeDataArray(d.accFreeze).map(v => `<td>${v ? v.toFixed(3) : ''}</td>`).join('');
+                t1Body.appendChild(row1f);
 
-                // Table 2 - AUROC
                 let row2 = document.createElement('tr');
-                let cell2 = `<td class="dataset-cell">${d.ds} (Main)</td>`;
-                d.auroc.forEach(val => cell2 += `<td>${val ? val.toFixed(4) : '-'}</td>`);
-                row2.innerHTML = cell2; t2Body.appendChild(row2);
+                row2.innerHTML = `<td class="dataset-cell">${d.ds} (Main)</td>` + d.auroc.map(v => `<td>${v ? v.toFixed(4) : '-'}</td>`).join('');
+                t2Body.appendChild(row2);
 
                 let row2f = document.createElement('tr');
                 row2f.className = 'freeze-cell';
-                let cell2f = `<td class="dataset-cell">${d.ds} (Freeze-Enc)</td>`;
-                const fAurocArr = getFreezeDataArray(d.aurocFreeze);
-                fAurocArr.forEach(val => cell2f += `<td>${val ? val.toFixed(4) : ''}</td>`);
-                row2f.innerHTML = cell2f; t2Body.appendChild(row2f);
+                row2f.innerHTML = `<td class="dataset-cell">${d.ds} (Freeze)</td>` + getFreezeDataArray(d.aurocFreeze).map(v => `<td>${v ? v.toFixed(4) : ''}</td>`).join('');
+                t2Body.appendChild(row2f);
             });
         }
 
@@ -369,17 +359,10 @@
         }
 
         function initCharts() {
-            const opt = (yTitle, yMin, yMax) => ({
+            const opt = (yMin, yMax) => ({
                 responsive: true, maintainAspectRatio: false,
                 interaction: { mode: 'index', intersect: false },
-                plugins: { 
-                    legend: { display: false }, 
-                    tooltip: { 
-                        callbacks: { 
-                            label: (ctx) => `${ctx.dataset.label}: ${ctx.parsed.y ? ctx.parsed.y.toFixed(4) : 'N/A'}` 
-                        } 
-                    } 
-                },
+                plugins: { legend: { display: false } },
                 scales: {
                     x: { grid: { display: false }, ticks: { font: { weight: 'bold' } }, border: { width: 2, color: '#000' } },
                     y: { min: yMin, max: yMax, grid: { color: '#f3f3f3' }, border: { width: 2, color: '#000' }, ticks: { callback: v => v.toFixed(2) } }
@@ -389,21 +372,18 @@
             const accDs = [];
             const aurocDs = [];
             rawData.forEach((d, i) => {
-                // Accuracy Sets
                 accDs.push({ label: d.ds, data: d.acc, borderColor: d.color, backgroundColor: d.color, borderWidth: 2, pointStyle: markers[i], pointRadius: 4, tension: 0.1, spanGaps: true });
                 accDs.push({ label: `${d.ds}_base`, data: Array(epochLabels.length).fill(d.accBaseline), borderColor: d.color, borderWidth: 1, borderDash: [5, 5], pointRadius: 0 });
-                accDs.push({ label: `${d.ds}_freeze`, data: getFreezeDataArray(d.accFreeze), borderColor: d.color, borderWidth: 3, borderDash: [2, 4], pointStyle: 'cross', pointRadius: 6, showLine: true, spanGaps: false });
+                accDs.push({ label: `${d.ds}_freeze`, data: getFreezeDataArray(d.accFreeze), borderColor: d.color, borderWidth: 3, borderDash: [2, 4], pointStyle: 'cross', pointRadius: 6, showLine: true });
 
-                // AUROC Sets
                 aurocDs.push({ label: d.ds, data: d.auroc, borderColor: d.color, backgroundColor: d.color, borderWidth: 2.5, pointStyle: markers[i], pointRadius: 5, tension: 0.1, spanGaps: true });
                 aurocDs.push({ label: `${d.ds}_base`, data: Array(epochLabels.length).fill(d.aurocBaseline > 1 ? d.aurocBaseline/100 : d.aurocBaseline), borderColor: d.color, borderWidth: 1, borderDash: [5, 5], pointRadius: 0 });
-                aurocDs.push({ label: `${d.ds}_freeze`, data: getFreezeDataArray(d.aurocFreeze), borderColor: d.color, borderWidth: 3, borderDash: [2, 4], pointStyle: 'cross', pointRadius: 6, showLine: true, spanGaps: false });
+                aurocDs.push({ label: `${d.ds}_freeze`, data: getFreezeDataArray(d.aurocFreeze), borderColor: d.color, borderWidth: 3, borderDash: [2, 4], pointStyle: 'cross', pointRadius: 6, showLine: true });
             });
 
-            charts.acc = new Chart(document.getElementById('accuracyChart'), { type: 'line', data: { labels: epochLabels, datasets: accDs }, options: opt('Mean Accuracy', 0.3, 1.0) });
-            charts.auroc = new Chart(document.getElementById('aurocChart'), { type: 'line', data: { labels: epochLabels, datasets: aurocDs }, options: opt('Mean AUROC Score', 0.6, 1.0) });
+            charts.acc = new Chart(document.getElementById('accuracyChart'), { type: 'line', data: { labels: epochLabels, datasets: accDs }, options: opt(0.3, 1.0) });
+            charts.auroc = new Chart(document.getElementById('aurocChart'), { type: 'line', data: { labels: epochLabels, datasets: aurocDs }, options: opt(0.6, 1.0) });
 
-            // Bar Chart
             new Chart(document.getElementById('distributionChart'), {
                 type: 'bar',
                 data: {
@@ -416,11 +396,8 @@
                 },
                 options: {
                     responsive: true, maintainAspectRatio: false,
-                    plugins: { legend: { position: 'top', labels: { font: { weight: 'bold' } } } },
-                    scales: {
-                        x: { stacked: true, grid: { display: false }, ticks: { font: { weight: 'bold' } } },
-                        y: { stacked: true, beginAtZero: true, title: { display: true, text: 'Number of Samples', font: { weight: 'bold' } } }
-                    }
+                    plugins: { legend: { position: 'top' } },
+                    scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true } }
                 }
             });
         }
