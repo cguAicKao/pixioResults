@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>模型訓練性能全週期分析 (E0-E390)</title>
+    <title>模型訓練性能全週期分析 (Epoch 0 - Epoch 390)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -58,7 +58,7 @@
             padding: 0.5rem;
             border: 1px solid #cbd5e1;
             text-align: center;
-            min-width: 60px;
+            min-width: 80px;
         }
         td {
             padding: 0.5rem;
@@ -78,6 +78,24 @@
             left: 0;
             z-index: 10;
         }
+        .chart-container-alt {
+            position: relative;
+            height: 500px;
+            width: 100%;
+            max-width: 900px;
+            margin: 1rem auto;
+            padding: 20px;
+            background: #ffffff;
+            border-radius: 8px;
+        }
+        .caption {
+            text-align: center;
+            font-family: 'Times New Roman', 'Noto Sans TC', serif;
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-top: 15px;
+            color: #334155;
+        }
     </style>
 </head>
 <body class="p-4 md:p-8">
@@ -85,131 +103,100 @@
         <!-- Header -->
         <header class="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4 border-b-2 border-slate-200 pb-6">
             <div>
-                <h1 class="text-3xl font-bold text-slate-900">模型訓練性能深度監控 (E390)</h1>
-                <p class="text-slate-500">指標對比：Accuracy & AUROC (包含新訓練節點 E200-E390)</p>
+                <h1 class="text-3xl font-bold text-slate-900">模型訓練性能深度監控 (Epoch 390)</h1>
+                <p class="text-slate-500">指標對比：性能演進已依照樣本數據量 (圖 2) 重新排列</p>
             </div>
-            <div class="text-xs text-slate-400 font-mono bg-white px-3 py-1 rounded-full shadow-sm border">Version: 2024-DR-V14</div>
         </header>
 
-        <!-- Stats Overview -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <div class="card p-6 border-l-4 border-blue-500">
-                <p class="text-xs text-slate-500 font-bold uppercase tracking-wider">最高 Accuracy (APTOS)</p>
-                <p class="text-3xl font-bold text-slate-800">0.8456</p>
-                <p class="text-xs text-slate-400 mt-2 font-medium">於 Epoch 360 達成</p>
-            </div>
-            <div class="card p-6 border-l-4 border-emerald-500">
-                <p class="text-xs text-emerald-500 font-bold uppercase tracking-wider">AUROC 峰值 (Retina)</p>
-                <p class="text-3xl font-bold text-slate-800">0.9037</p>
-                <p class="text-xs text-slate-400 mt-2">於 Epoch 260 達成</p>
-            </div>
-            <div class="card p-6 border-l-4 border-red-500">
-                <p class="text-xs text-red-600 font-bold uppercase tracking-wider">IDRiD 收斂狀態</p>
-                <p class="text-3xl font-bold text-slate-800">0.5689</p>
-                <p class="text-xs text-slate-400 mt-2">Acc 趨於穩定波動</p>
-            </div>
-            <div class="card p-6 border-l-4 border-indigo-500">
-                <p class="text-xs text-indigo-500 font-bold uppercase tracking-wider">監控範圍</p>
-                <p class="text-3xl font-bold text-slate-800">E0-E390</p>
-                <p class="text-xs text-slate-400 mt-2">完整覆蓋後續訓練週期</p>
-            </div>
-        </div>
-
-        <!-- Main Chart Section -->
+        <!-- Main Evolution Chart Section (圖 1) -->
         <div class="card p-6 mb-8">
             <div class="flex justify-between items-center mb-6">
-                <h2 id="chartTitle" class="font-bold text-lg text-slate-800">性能演進與基準對照 (Accuracy: E0-E390)</h2>
+                <h2 id="chartTitle" class="font-bold text-lg text-slate-800">圖 1. 性能演進與基準對照 (Accuracy: Epoch 0 - Epoch 390)</h2>
                 <div class="flex gap-2 bg-slate-100 p-1 rounded-lg">
                     <button onclick="switchMetric('accuracy')" id="accBtn" class="tab-btn active">Accuracy</button>
                     <button onclick="switchMetric('auroc')" id="aurocBtn" class="tab-btn inactive">AUROC</button>
                 </div>
             </div>
-            <div style="height: 480px;">
+            <div style="height: 520px;">
                 <canvas id="evolutionChart"></canvas>
             </div>
-            <p class="legend-tip">💡 提示：實線為訓練曲線，虛線為 SOTA 基準。X 軸已更新至 390 Epoch。</p>
+            <p class="legend-tip">💡 提示：排序已依照樣本數量調整。點擊標籤可同步切換實線與虛線。</p>
         </div>
 
-        <!-- Data Tables Section (Accuracy) -->
+        <!-- Data Tables Section -->
         <div class="card p-6 mb-8">
-            <h2 class="font-bold text-xl text-slate-800 mb-4 flex items-center gap-2">
-                Accuracy 數據矩陣 (E0-E390)
-            </h2>
+            <h2 class="font-bold text-xl text-slate-800 mb-4">數據矩陣 (Epoch 0 - Epoch 390)</h2>
             <div class="data-table-container">
-                <table id="accuracyTable">
+                <table id="dataTable">
                     <thead>
-                        <tr id="accTableHeader">
+                        <tr id="tableHeader">
                             <th class="dataset-name-cell">Dataset \ Epoch</th>
                         </tr>
                     </thead>
-                    <tbody id="accTableBody"></tbody>
+                    <tbody id="tableBody"></tbody>
                 </table>
             </div>
         </div>
 
-        <!-- Data Tables Section (AUROC) -->
-        <div class="card p-6">
-            <h2 class="font-bold text-xl text-slate-800 mb-4 flex items-center gap-2">
-                AUROC 數據矩陣 (E0-E390)
-            </h2>
-            <div class="data-table-container">
-                <table id="aurocTable">
-                    <thead>
-                        <tr id="aurocTableHeader">
-                            <th class="dataset-name-cell">Dataset \ Epoch</th>
-                        </tr>
-                    </thead>
-                    <tbody id="aurocTableBody"></tbody>
-                </table>
+        <!-- Distribution Chart Section (圖 2) -->
+        <div class="card p-6 mb-8">
+            <h2 class="font-bold text-xl text-slate-800 mb-4">數據集結構分析</h2>
+            <div class="chart-container-alt">
+                <canvas id="distributionChart"></canvas>
             </div>
+            <p class="caption">圖 2. 數據集樣本分佈統計 (由大到小排列)</p>
         </div>
     </div>
 
     <script>
         const ctxEvolution = document.getElementById('evolutionChart').getContext('2d');
+        const ctxDist = document.getElementById('distributionChart').getContext('2d');
         let evolutionChart;
         
-        const labels = ['E0', 'E20', 'E40', 'E60', 'E80', 'E100', 'E120', 'E140', 'E160', 'E200', 'E220', 'E240', 'E260', 'E280', 'E300', 'E330', 'E360', 'E390'];
+        const labels = ['Epoch 0', 'Epoch 20', 'Epoch 40', 'Epoch 60', 'Epoch 80', 'Epoch 100', 'Epoch 120', 'Epoch 140', 'Epoch 160', 'Epoch 200', 'Epoch 220', 'Epoch 240', 'Epoch 260', 'Epoch 280', 'Epoch 300', 'Epoch 330', 'Epoch 360', 'Epoch 390'];
         
+        // 核心排序：依據樣本數由大到小
+        const sortedDatasetKeys = ["APTOS2019", "MESSIDOR2", "Glaucoma", "Retina", "IDRiD", "PAPILA"];
+
         const dataConfig = {
             accuracy: {
                 "APTOS2019": [0.8264, 0.8409, 0.8371, 0.8385, 0.8427, 0.8416, 0.8358, 0.8402, 0.8445, 0.8369, 0.8435, 0.8378, 0.8422, 0.8424, 0.8427, 0.8422, 0.8456, 0.8436],
-                "Glaucoma": [0.7656, 0.8116, 0.8129, 0.8159, 0.8254, 0.8163, 0.8176, 0.8370, 0.8387, 0.8249, 0.8340, 0.8262, 0.8198, 0.8327, 0.8280, 0.8314, 0.8361, 0.8383],
-                "IDRiD": [0.4777, 0.5476, 0.5301, 0.5592, 0.5437, 0.5709, 0.5379, 0.5670, 0.5398, 0.5631, 0.5553, 0.5262, 0.5631, 0.5515, 0.5650, 0.5592, 0.5689, 0.5689],
                 "MESSIDOR2": [0.7228, 0.7262, 0.7293, 0.7331, 0.7445, 0.7365, 0.7376, 0.7327, 0.7403, 0.7422, 0.7331, 0.7361, 0.7430, 0.7433, 0.7407, 0.7365, 0.7483, 0.7502],
-                "PAPILA": [0.7224, 0.7673, 0.7735, 0.7592, 0.7592, 0.7673, 0.7694, 0.7653, 0.7633, 0.7755, 0.7531, 0.7714, 0.7531, 0.7735, 0.7673, 0.7714, 0.7673, 0.7857],
-                "Retina": [0.5967, 0.7182, 0.7127, 0.7304, 0.7249, 0.7215, 0.7204, 0.7050, 0.7127, 0.7094, 0.7116, 0.7094, 0.7326, 0.7149, 0.7271, 0.7260, 0.7193, 0.7127]
+                "Glaucoma": [0.7656, 0.8116, 0.8129, 0.8159, 0.8254, 0.8163, 0.8176, 0.8370, 0.8387, 0.8249, 0.8340, 0.8262, 0.8198, 0.8327, 0.8280, 0.8314, 0.8361, 0.8383],
+                "Retina": [0.5967, 0.7182, 0.7127, 0.7304, 0.7249, 0.7215, 0.7204, 0.7050, 0.7127, 0.7094, 0.7116, 0.7094, 0.7326, 0.7149, 0.7271, 0.7271, 0.7193, 0.7127],
+                "IDRiD": [0.4777, 0.5476, 0.5301, 0.5592, 0.5437, 0.5709, 0.5379, 0.5670, 0.5398, 0.5631, 0.5553, 0.5262, 0.5631, 0.5515, 0.5650, 0.5592, 0.5689, 0.5689],
+                "PAPILA": [0.7224, 0.7673, 0.7735, 0.7592, 0.7592, 0.7673, 0.7694, 0.7653, 0.7633, 0.7755, 0.7531, 0.7714, 0.7531, 0.7735, 0.7673, 0.7714, 0.7673, 0.7857]
             },
             auroc: {
                 "APTOS2019": [0.9403, 0.9475, 0.9458, 0.9448, 0.9447, 0.9440, 0.9445, 0.9467, 0.9458, 0.9426, 0.9453, 0.9446, 0.9458, 0.9477, 0.9436, 0.9452, 0.9461, 0.9463],
-                "Glaucoma": [0.9046, 0.9303, 0.9304, 0.9341, 0.9369, 0.9310, 0.9356, 0.9383, 0.9400, 0.9343, 0.9361, 0.9340, 0.9351, 0.9387, 0.9376, 0.9383, 0.9408, 0.9403],
-                "IDRiD": [0.7914, 0.8068, 0.8155, 0.8157, 0.8125, 0.8104, 0.8085, 0.8167, 0.8149, 0.8125, 0.8140, 0.8015, 0.8151, 0.8102, 0.8117, 0.8106, 0.8131, 0.8140],
                 "MESSIDOR2": [0.8853, 0.8916, 0.8913, 0.8922, 0.8940, 0.8909, 0.8938, 0.8919, 0.8896, 0.8880, 0.8911, 0.8916, 0.8927, 0.8928, 0.8884, 0.8920, 0.8925, 0.8947],
-                "PAPILA": [0.7145, 0.8485, 0.8438, 0.8460, 0.8433, 0.8369, 0.8511, 0.8399, 0.8431, 0.8606, 0.8441, 0.8472, 0.8312, 0.8366, 0.8401, 0.8462, 0.8386, 0.8367],
-                "Retina": [0.7161, 0.8970, 0.9005, 0.8998, 0.9010, 0.9017, 0.8947, 0.8874, 0.8981, 0.8966, 0.9006, 0.8973, 0.9037, 0.9014, 0.8944, 0.8971, 0.8912, 0.9008]
+                "Glaucoma": [0.9046, 0.9303, 0.9304, 0.9341, 0.9369, 0.9310, 0.9356, 0.9383, 0.9400, 0.9343, 0.9361, 0.9340, 0.9351, 0.9387, 0.9376, 0.9383, 0.9408, 0.9403],
+                "Retina": [0.7161, 0.8970, 0.9005, 0.8998, 0.9010, 0.9017, 0.8947, 0.8874, 0.8981, 0.8966, 0.9006, 0.8973, 0.9037, 0.9014, 0.8944, 0.8971, 0.8912, 0.9008],
+                "IDRiD": [0.7914, 0.8068, 0.8155, 0.8157, 0.8125, 0.8104, 0.8085, 0.8167, 0.8149, 0.8125, 0.8140, 0.8015, 0.8151, 0.8102, 0.8117, 0.8106, 0.8131, 0.8140],
+                "PAPILA": [0.7145, 0.8485, 0.8438, 0.8460, 0.8433, 0.8369, 0.8511, 0.8399, 0.8431, 0.8606, 0.8441, 0.8472, 0.8312, 0.8366, 0.8401, 0.8462, 0.8386, 0.8367]
             },
             baselines: {
                 accuracy: {
                     "APTOS [RETFound Dinov2]": 0.8524,
-                    "Glaucoma [Dinov2 SH]": 0.8692,
-                    "IDRiD [RETFound Dinov2]": 0.6563,
                     "MESSIDOR2 [RETFound Dinov2]": 0.7707,
-                    "PAPILA [RETFound Dinov2]": 0.8408,
-                    "Retina [RETFound Dinov2]": 0.7304
+                    "Glaucoma [Dinov2 SH]": 0.8692,
+                    "Retina [RETFound Dinov2]": 0.7304,
+                    "IDRiD [RETFound Dinov2]": 0.6563,
+                    "PAPILA [RETFound Dinov2]": 0.8408
                 },
                 auroc: {
                     "APTOS [Dinov2]": 0.9519,
-                    "Glaucoma [Dinov2 SH]": 0.9552,
-                    "IDRiD [RETFound Dinov2]": 0.8541,
                     "MESSIDOR2 [Dinov3]": 0.9089,
-                    "PAPILA [RETFound Dinov2]": 0.8797,
-                    "Retina [Dinov3]": 0.9015
+                    "Glaucoma [Dinov2 SH]": 0.9552,
+                    "Retina [Dinov3]": 0.9015,
+                    "IDRiD [RETFound Dinov2]": 0.8541,
+                    "PAPILA [RETFound Dinov2]": 0.8797
                 }
             }
         };
 
         const colors = {
-            "APTOS2019": '#3b82f6',
+            "APTOS": '#3b82f6',
             "Glaucoma": '#10b981',
             "IDRiD": '#ef4444',
             "MESSIDOR2": '#8b5cf6',
@@ -217,49 +204,60 @@
             "Retina": '#64748b'
         };
 
-        const groupMapping = {
-            "APTOS": ["APTOS2019", "APTOS [RETFound Dinov2]", "APTOS [Dinov2]"],
-            "Glaucoma": ["Glaucoma", "Glaucoma [Dinov2 SH]"],
-            "IDRiD": ["IDRiD", "IDRiD [RETFound Dinov2]"],
-            "MESSIDOR2": ["MESSIDOR2", "MESSIDOR2 [RETFound Dinov2]", "MESSIDOR2 [Dinov3]"],
-            "PAPILA": ["PAPILA", "PAPILA [RETFound Dinov2]"],
-            "Retina": ["Retina", "Retina [RETFound Dinov2]", "Retina [Dinov3]"]
-        };
+        const statsData = [
+            { name: 'APTOS2019', train: 2048, val: 514, test: 1100 },
+            { name: 'MESSIDOR2', train: 972, val: 246, test: 526 },
+            { name: 'Glaucoma Fundus', train: 861, val: 218, test: 465 },
+            { name: 'Retina', train: 336, val: 84, test: 181 },
+            { name: 'IDRiD Data', train: 329, val: 84, test: 103 },
+            { name: 'PAPILA', train: 311, val: 79, test: 98 }
+        ];
 
         function renderEvolutionChart(type) {
             const chartDatasets = [];
-            
-            Object.keys(dataConfig[type]).forEach(name => {
-                chartDatasets.push({
-                    label: name,
-                    data: dataConfig[type][name],
-                    borderColor: colors[name],
-                    backgroundColor: colors[name],
-                    borderWidth: name === 'IDRiD' ? 4 : 2.5,
-                    pointRadius: 3,
-                    tension: 0.1,
-                    fill: false,
-                    order: 1
-                });
-            });
-
             const currentBaselines = dataConfig.baselines[type];
-            Object.keys(currentBaselines).forEach(name => {
-                const baseKey = name.split(' ')[0];
-                chartDatasets.push({
-                    label: name,
-                    data: Array(labels.length).fill(currentBaselines[name]),
-                    borderColor: colors[baseKey] || '#cbd5e1',
-                    borderDash: [5, 5],
-                    borderWidth: 1.5,
-                    pointRadius: 0,
-                    fill: false,
-                    order: 2
+            
+            sortedDatasetKeys.forEach(key => {
+                const groupKey = key.replace('2019', '').replace('Data', '').trim();
+                const mainColor = colors[groupKey] || '#94a3b8';
+                
+                // 1. 添加實線 (實驗)
+                if (dataConfig[type][key]) {
+                    chartDatasets.push({
+                        label: key,
+                        data: dataConfig[type][key],
+                        borderColor: mainColor,
+                        backgroundColor: mainColor,
+                        borderWidth: 3,
+                        pointRadius: 4,
+                        tension: 0.1,
+                        fill: false,
+                        datasetGroup: groupKey,
+                        isBaseline: false
+                    });
+                }
+
+                // 2. 添加虛線 (基準)
+                // 使用關鍵字匹配，例如 key="APTOS2019" 匹配 bName="APTOS [RETFound...]"
+                Object.keys(currentBaselines).forEach(bName => {
+                    const matchKey = key.replace('2019', '').trim();
+                    if (bName.includes(matchKey) || bName.startsWith(matchKey.split(' ')[0])) {
+                        chartDatasets.push({
+                            label: bName,
+                            data: Array(labels.length).fill(currentBaselines[bName]),
+                            borderColor: mainColor,
+                            borderDash: [6, 4],
+                            borderWidth: 2,
+                            pointRadius: 0,
+                            fill: false,
+                            datasetGroup: groupKey,
+                            isBaseline: true
+                        });
+                    }
                 });
             });
 
             if (evolutionChart) evolutionChart.destroy();
-
             evolutionChart = new Chart(ctxEvolution, {
                 type: 'line',
                 data: { labels: labels, datasets: chartDatasets },
@@ -269,56 +267,102 @@
                     plugins: {
                         legend: { 
                             position: 'bottom',
-                            labels: { boxWidth: 10, font: { size: 10 } }
+                            onClick: (e, legendItem, legend) => {
+                                const index = legendItem.datasetIndex;
+                                const ci = legend.chart;
+                                const groupName = ci.data.datasets[index].datasetGroup;
+                                ci.data.datasets.forEach((dataset, i) => {
+                                    if (dataset.datasetGroup === groupName) {
+                                        const meta = ci.getDatasetMeta(i);
+                                        meta.hidden = meta.hidden === null ? !ci.data.datasets[i].hidden : null;
+                                    }
+                                });
+                                ci.update();
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const isBase = context.dataset.isBaseline;
+                                    return `${context.dataset.label}${isBase ? ' (Baseline)' : ''}: ${context.parsed.y.toFixed(4)}`;
+                                }
+                            }
                         }
                     },
                     scales: {
                         y: { 
                             min: type === 'accuracy' ? 0.45 : 0.7,
-                            max: type === 'accuracy' ? 0.9 : 1.0,
                             grid: { color: '#f1f5f9' },
-                            title: { display: true, text: type.toUpperCase() + ' Mean' }
+                            title: { display: true, text: type.toUpperCase() }
                         }
                     }
                 }
             });
         }
 
-        function populateTables() {
-            const accHeader = document.getElementById('accTableHeader');
-            const aurocHeader = document.getElementById('aurocTableHeader');
-            const accBody = document.getElementById('accTableBody');
-            const aurocBody = document.getElementById('aurocTableBody');
-
-            labels.forEach(e => {
-                const thA = document.createElement('th'); thA.textContent = e; accHeader.appendChild(thA);
-                const thB = document.createElement('th'); thB.textContent = e; aurocHeader.appendChild(thB);
+        function renderDistributionChart() {
+            new Chart(ctxDist, {
+                type: 'bar',
+                data: {
+                    labels: statsData.map(s => s.name),
+                    datasets: [
+                        { label: 'Training (訓練集)', data: statsData.map(s => s.train), backgroundColor: '#3b82f6', borderWidth: 1 },
+                        { label: 'Validation (驗證集)', data: statsData.map(s => s.val), backgroundColor: '#60a5fa', borderWidth: 1 },
+                        { label: 'Test (測試集)', data: statsData.map(s => s.test), backgroundColor: '#93c5fd', borderWidth: 1 }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'top', labels: { font: { weight: 'bold' } } },
+                        tooltip: { mode: 'index', intersect: false }
+                    },
+                    scales: {
+                        x: { stacked: true, grid: { display: false } },
+                        y: {
+                            stacked: true,
+                            beginAtZero: true,
+                            title: { display: true, text: '樣本數量 (Number of Samples)', font: { weight: 'bold' } }
+                        }
+                    }
+                }
             });
+        }
 
-            const renderRows = (targetBody, metric) => {
-                Object.keys(dataConfig[metric]).forEach(name => {
-                    const vals = dataConfig[metric][name];
+        function populateTable(metric) {
+            const headerRow = document.getElementById('tableHeader');
+            const body = document.getElementById('tableBody');
+            headerRow.innerHTML = '<th class="dataset-name-cell">Dataset \\ Epoch</th>';
+            body.innerHTML = '';
+            labels.forEach(e => {
+                const th = document.createElement('th');
+                th.textContent = e;
+                headerRow.appendChild(th);
+            });
+            sortedDatasetKeys.forEach(name => {
+                const vals = dataConfig[metric][name];
+                if (vals) {
                     let row = `<tr><td class="dataset-name-cell">${name}</td>`;
                     vals.forEach(v => row += `<td>${v.toFixed(4)}</td>`);
                     row += '</tr>';
-                    targetBody.innerHTML += row;
-                });
-            };
-
-            renderRows(accBody, 'accuracy');
-            renderRows(aurocBody, 'auroc');
+                    body.innerHTML += row;
+                }
+            });
         }
 
         function switchMetric(metric) {
             document.getElementById('accBtn').className = metric === 'accuracy' ? 'tab-btn active' : 'tab-btn inactive';
             document.getElementById('aurocBtn').className = metric === 'auroc' ? 'tab-btn active' : 'tab-btn inactive';
-            document.getElementById('chartTitle').innerText = `性能演進與基準對照 (${metric.toUpperCase()}: E0-E390)`;
+            document.getElementById('chartTitle').innerText = `圖 1. 性能演進與基準對照 (${metric.toUpperCase()}: Epoch 0 - Epoch 390)`;
             renderEvolutionChart(metric);
+            populateTable(metric);
         }
 
         window.onload = () => {
             renderEvolutionChart('accuracy');
-            populateTables();
+            renderDistributionChart();
+            populateTable('accuracy');
         };
     </script>
 </body>
