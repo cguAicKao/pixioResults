@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>模型訓練結果可視化</title>
+    <title>模型訓練結果與數據分佈可視化</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -13,57 +13,90 @@
             height: 300px;
             width: 100%;
         }
+        .distribution-container {
+            position: relative;
+            height: 500px;
+            width: 100%;
+            max-width: 900px;
+            margin: 2rem auto;
+            padding: 20px;
+            background: #fafafa;
+            border-radius: 8px;
+            border: 1px solid #eee;
+        }
+        .caption {
+            text-align: center;
+            font-family: 'serif';
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-top: 15px;
+        }
     </style>
 </head>
 <body class="bg-gray-50 p-4 md:p-8">
     <div class="max-w-6xl mx-auto">
-        <header class="mb-8 text-center">
-            <h1 class="text-3xl font-bold text-gray-800">模型效能對比分析 (Mean)</h1>
-            <p class="text-gray-600 mt-2">比較 freeze-enc10 與 freeze-enc30 在不同 Epoch 的平均表現</p>
+        <header class="mb-8 text-center border-b pb-6">
+            <h1 class="text-3xl font-bold text-gray-800">模型效能與數據分佈分析</h1>
+            <p class="text-gray-600 mt-2">比較 Enc-Frozen-10ep 與 Enc-Frozen-30ep 的 Mean 表現及數據集規模統計</p>
         </header>
 
-        <div id="charts-grid" class="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <!-- 圖表由 JavaScript 動態生成 -->
+        <!-- 效能對比圖表區塊 -->
+        <div class="mb-12">
+            <h2 class="text-2xl font-bold mb-6 text-blue-800 px-4">1. 模型效能對比 (Mean Accuracy)</h2>
+            <p class="text-sm text-gray-500 px-4 mb-4">* 排序依據：數據集總量由大到小</p>
+            <div id="charts-grid" class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- 圖表由 JavaScript 動態生成 -->
+            </div>
+        </div>
+
+        <!-- 數據分佈區塊 -->
+        <div class="mt-16 pt-8 border-t">
+            <h2 class="text-2xl font-bold mb-6 text-blue-800 px-4">2. 數據集規模統計</h2>
+            <div class="distribution-container">
+                <canvas id="distributionChart"></canvas>
+            </div>
+            <p class="caption">圖 2. 數據集樣本分佈統計 (由大到小排列)</p>
         </div>
     </div>
 
     <script>
-        // 僅保留 Mean 數據
-        const data = {
+        // --- 1. 效能對比數據 (已按圖 2 總量由大到小排列) ---
+        const performanceData = {
             "APTOS2019": {
                 "enc10": [0.8302, 0.8356, 0.8296],
                 "enc30": [0.8336, 0.8395, 0.8433]
-            },
-            "Glaucoma_fundus": {
-                "enc10": [0.8353, 0.8275, 0.8318],
-                "enc30": [0.8228, 0.8288, 0.8404]
-            },
-            "IDRiD_data": {
-                "enc10": [0.5068, 0.5204, 0.4816],
-                "enc30": [0.4777, 0.4913, 0.4990]
             },
             "MESSIDOR2": {
                 "enc10": [0.6875, 0.7114, 0.7004],
                 "enc30": [0.7030, 0.7087, 0.7122]
             },
-            "PAPILA": {
-                "enc10": [0.7694, 0.7531, 0.7735],
-                "enc30": [0.7857, 0.7714, 0.7612]
+            "Glaucoma_fundus": {
+                "enc10": [0.8353, 0.8275, 0.8318],
+                "enc30": [0.8228, 0.8288, 0.8404]
             },
             "Retina": {
                 "enc10": [0.6210, 0.6099, 0.5978],
                 "enc30": [0.6088, 0.6099, 0.5934]
+            },
+            "IDRiD_data": {
+                "enc10": [0.5068, 0.5204, 0.4816],
+                "enc30": [0.4777, 0.4913, 0.4990]
+            },
+            "PAPILA": {
+                "enc10": [0.7694, 0.7531, 0.7735],
+                "enc30": [0.7857, 0.7714, 0.7612]
             }
         };
 
         const epochs = ['Epoch 10', 'Epoch 20', 'Epoch 30'];
         const grid = document.getElementById('charts-grid');
 
-        Object.keys(data).forEach(datasetName => {
+        // 生成效能對比圖
+        Object.keys(performanceData).forEach(datasetName => {
             const card = document.createElement('div');
             card.className = 'bg-white p-6 rounded-xl shadow-sm border border-gray-200';
             card.innerHTML = `
-                <h2 class="text-xl font-bold mb-4 text-gray-700 border-b pb-2">${datasetName}</h2>
+                <h3 class="text-xl font-bold mb-4 text-gray-700 border-b pb-2">${datasetName}</h3>
                 <div class="chart-container">
                     <canvas id="chart-${datasetName}"></canvas>
                 </div>
@@ -71,7 +104,7 @@
             grid.appendChild(card);
 
             const ctx = document.getElementById(`chart-${datasetName}`).getContext('2d');
-            const datasetInfo = data[datasetName];
+            const datasetInfo = performanceData[datasetName];
 
             new Chart(ctx, {
                 type: 'line',
@@ -79,7 +112,7 @@
                     labels: epochs,
                     datasets: [
                         {
-                            label: 'Freeze-Enc10',
+                            label: 'Enc-Frozen-10ep',
                             data: datasetInfo.enc10,
                             borderColor: 'rgba(54, 162, 235, 1)',
                             backgroundColor: 'rgba(54, 162, 235, 0.1)',
@@ -89,7 +122,7 @@
                             borderWidth: 2
                         },
                         {
-                            label: 'Freeze-Enc30',
+                            label: 'Enc-Frozen-30ep',
                             data: datasetInfo.enc30,
                             borderColor: 'rgba(255, 99, 132, 1)',
                             backgroundColor: 'rgba(255, 99, 132, 0.1)',
@@ -105,10 +138,7 @@
                     maintainAspectRatio: false,
                     plugins: {
                         legend: { position: 'bottom' },
-                        tooltip: {
-                            mode: 'index',
-                            intersect: false
-                        }
+                        tooltip: { mode: 'index', intersect: false }
                     },
                     scales: {
                         y: {
@@ -118,6 +148,73 @@
                     }
                 }
             });
+        });
+
+        // --- 2. 數據分佈圖表 (堆疊長條圖) ---
+        const statsData = [
+            { name: 'APTOS2019', train: 2048, val: 514, test: 1100 },
+            { name: 'MESSIDOR2', train: 972, val: 246, test: 526 },
+            { name: 'Glaucoma Fundus', train: 861, val: 218, test: 465 },
+            { name: 'Retina', train: 336, val: 84, test: 181 },
+            { name: 'IDRiD Data', train: 329, val: 84, test: 103 },
+            { name: 'PAPILA', train: 311, val: 79, test: 98 }
+        ];
+
+        const distCtx = document.getElementById('distributionChart').getContext('2d');
+        
+        new Chart(distCtx, {
+            type: 'bar',
+            data: {
+                labels: statsData.map(s => s.name),
+                datasets: [
+                    {
+                        label: 'Training (訓練集)',
+                        data: statsData.map(s => s.train),
+                        backgroundColor: '#3b82f6',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Validation (驗證集)',
+                        data: statsData.map(s => s.val),
+                        backgroundColor: '#60a5fa',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Test (測試集)',
+                        data: statsData.map(s => s.test),
+                        backgroundColor: '#93c5fd',
+                        borderWidth: 1
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: { font: { size: 12, weight: 'bold' } }
+                    },
+                    tooltip: { mode: 'index', intersect: false }
+                },
+                scales: {
+                    x: {
+                        stacked: true,
+                        grid: { display: false },
+                        ticks: { font: { weight: 'bold' } }
+                    },
+                    y: {
+                        stacked: true,
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: '樣本數量 (Number of Samples)',
+                            font: { weight: 'bold' }
+                        },
+                        grid: { color: '#efefef' }
+                    }
+                }
+            }
         });
     </script>
 </body>
