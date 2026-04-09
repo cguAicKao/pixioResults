@@ -10,7 +10,7 @@
         .chart-container {
             position: relative;
             margin: auto;
-            height: 300px;
+            height: 420px;
             width: 100%;
         }
     </style>
@@ -131,10 +131,11 @@
                 data: datasetInfo.accuracy_enc10.mean,
                 borderColor: style.border,
                 backgroundColor: style.fill,
+                borderWidth: 3,
                 fill: false,
                 tension: 0.1,
                 pointStyle: 'circle',
-                pointRadius: 5
+                pointRadius: 6
             });
             accuracyDatasets.push({
                 label: `${datasetName} Enc30`,
@@ -142,11 +143,12 @@
                 data: datasetInfo.accuracy_enc30.mean,
                 borderColor: style.border,
                 backgroundColor: style.fill,
-                borderDash: [6, 4],
+                borderWidth: 3,
+                borderDash: [12, 6],
                 fill: false,
                 tension: 0.1,
                 pointStyle: 'rect',
-                pointRadius: 5
+                pointRadius: 6
             });
 
             aurocDatasets.push({
@@ -155,10 +157,11 @@
                 data: datasetInfo.auroc_enc10.mean,
                 borderColor: style.border,
                 backgroundColor: style.fill,
+                borderWidth: 3,
                 fill: false,
                 tension: 0.1,
                 pointStyle: 'circle',
-                pointRadius: 5
+                pointRadius: 6
             });
             aurocDatasets.push({
                 label: `${datasetName} Enc30`,
@@ -166,11 +169,12 @@
                 data: datasetInfo.auroc_enc30.mean,
                 borderColor: style.border,
                 backgroundColor: style.fill,
-                borderDash: [6, 4],
+                borderWidth: 3,
+                borderDash: [12, 6],
                 fill: false,
                 tension: 0.1,
                 pointStyle: 'rect',
-                pointRadius: 5
+                pointRadius: 6
             });
 
             allAccuracy.push(...datasetInfo.accuracy_enc10.mean, ...datasetInfo.accuracy_enc30.mean);
