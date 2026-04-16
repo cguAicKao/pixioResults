@@ -35,7 +35,7 @@
                 </div>
                 <h1 class="text-3xl md:text-4xl font-extrabold mb-3">深度學習模型訓練表現分析儀表板</h1>
                 <p class="text-slate-300 max-w-2xl leading-relaxed">
-                    本實驗採取兩階段訓練策略：首階段先<span class="text-blue-300 font-bold">冷凍 (Frozen) 前 10 個 Epochs</span>，穩定基礎特徵權重後，再解凍進入<span class="text-indigo-300 font-bold">後續 10 個 Epochs 的深度訓練</span>。下方圖表重點比較轉折期 (Epoch 11, 12) 與收斂期 (Epoch 18, 19) 之表現差異。
+                    本實驗採取兩階段訓練策略：首階段先<span class="text-blue-300 font-bold">冷凍 (Frozen) 前 10 個 Epochs</span>，穩定基礎特徵權重後，再解凍並<span class="text-yellow-400 font-bold">降低 Learning Rate</span> 進入後續 10 個 Epochs 的深度訓練。下方圖表重點比較轉折期 (Epoch 11, 12) 與收斂期 (Epoch 18, 19) 之表現差異。
                 </p>
             </div>
             <!-- 背景裝飾 -->
@@ -54,8 +54,8 @@
                     <p class="text-slate-500 text-sm mt-1">樣本量由左至右降序排列 (Large → Small)</p>
                 </div>
                 <div class="flex bg-slate-100 p-1.5 rounded-xl border border-slate-200">
-                    <button onclick="updateChart('accuracy')" id="btn-accuracy" class="px-6 py-2.5 rounded-lg transition-all font-bold text-sm bg-white shadow-md text-blue-600">ACCURACY</button>
-                    <button onclick="updateChart('auroc')" id="btn-auroc" class="px-6 py-2.5 rounded-lg transition-all font-bold text-sm text-slate-500 hover:text-blue-600">AUROC</button>
+                    <button onclick="updateChart('accuracy')" id="btn-accuracy" class="px-6 py-2.5 rounded-lg transition-all font-bold text-sm bg-white shadow-md text-blue-600 border-none">ACCURACY</button>
+                    <button onclick="updateChart('auroc')" id="btn-auroc" class="px-6 py-2.5 rounded-lg transition-all font-bold text-sm text-slate-500 hover:text-blue-600 border-none">AUROC</button>
                 </div>
             </div>
 
