@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pixio 實驗結果視覺化</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+        body { background-color: #ffffff; font-family: 'Times New Roman', serif; color: #000; }
+        .paper-container { max-width: 1300px; margin: 0 auto; padding: 3.5rem; }
+        .figure-layout { display: flex; flex-direction: row; gap: 2rem; margin-bottom: 3.5rem; }
+        .charts-container { display: flex; flex-direction: column; gap: 4rem; flex-grow: 1; }
+        .chart-box { position: relative; height: 450px; padding: 10px; }
+        .dist-chart-box { position: relative; height: 500px; padding: 20px; background: #fafafa; border-radius: 8px; border: 1px solid #eee; }
+        .custom-legend { flex-shrink: 0; width: 340px; padding-top: 20px; padding-left: 1.5rem; border-left: 1px solid #eee; position: sticky; top: 2rem; height: fit-content; }
+        .legend-section { margin-bottom: 2.5rem; }
+        .legend-item { display: flex; flex-direction: column; margin-bottom: 12px; padding: 10px; border-radius: 6px; cursor: pointer; transition: all 0.2s; user-select: none; border: 1px solid transparent; background-color: #fcfcfc; }
+        .legend-item:hover { background-color: #f3f4f6; border-color: #e5e7eb; }
+        .legend-item.hidden-state { opacity: 0.25; filter: grayscale(1); }
+        .legend-visual-row { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+        .line-solid { width: 25px; height: 4px; border-radius: 2px; }
+        .line-dashed { width: 25px; height: 0px; border-top: 2px dashed; }
+        .line-dotted { width: 25px; height: 0px; border-top: 3px dotted; }
+        .dataset-name { font-size: 0.85rem; font-weight: 800; line-height: 1.2; margin-bottom: 4px; display: block; }
+        .model-tag { font-size: 0.65rem; color: #444; font-family: 'Inter', sans-serif; display: flex; align-items: center; gap: 4px; white-space: nowrap; }
+        .tag-prefix { font-weight: bold; color: #888; width: 65px; flex-shrink: 0; }
+        .caption { text-align: center; font-size: 1.05rem; font-weight: bold; margin-top: 18px; color: #000; }
+        .academic-table { width: 100%; border-collapse: collapse; font-size: 0.6rem; border-top: 2.8px solid black; border-bottom: 2.8px solid black; }
+        .academic-table th { padding: 8px 2px; border-bottom: 1.2px solid black; text-transform: uppercase; font-weight: bold; }
+        .academic-table td { padding: 6px 2px; text-align: center; }
+        .dataset-cell { text-align: left !important; font-weight: bold; padding-left: 8px !important; border-right: 1px solid #ddd; width: 140px; }
+        .freeze-cell { background-color: #f9fafb; font-style: italic; color: #b91c1c; }
+    </style>
+</head>
+<body>
+    <div class="paper-container">
+        <div class="mb-10 border-b-2 border-black pb-4">
+            <h1 class="text-2xl font-bold uppercase tracking-wide">模型收斂性與凍結編碼器評估 (已更新 Freeze 數據)</h1>
+        </div>
+
+        <div class="figure-layout">
+            <div class="charts-container">
+                <div class="flex flex-col border-b border-gray-100 pb-8">
+                    <div class="chart-box"><canvas id="accuracyChart"></canvas></div>
+                    <p class="caption">圖 1. (a) 平均準確度趨勢 (Mean Accuracy)</p>
+                </div>
+                <div class="flex flex-col">
+                    <div class="chart-box"><canvas id="aurocChart"></canvas></div>
+                    <p class="caption">圖 1. (b) 平均 AUROC 趨勢 (Mean AUROC)</p>
+                </div>
+            </div>
+
+            <div class="custom-legend">
+                <div class="legend-section">
+                    <p class="text-[10px] font-black mb-3 tracking-[0.2em] text-red-600 uppercase border-b border-red-100 pb-1">Accuracy Toggle</p>
+                    <div id="accLegendContainer"></div>
+                </div>
+                <div class="legend-section">
+                    <p class="text-[10px] font-black mb-3 tracking-[0.2em] text-blue-600 uppercase border-b border-blue-100 pb-1">AUROC Toggle</p>
+                    <div id="aurocLegendContainer"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-10">
+            <p class="text-sm font-bold mb-4 italic">表 1. 各數據集準確度 (Accuracy) 數值匯總 (含補全數據)。</p>
+            <div class="overflow-x-auto">
+                <table class="academic-table">
+                    <thead><tr id="accHeader"><th class="dataset-cell">Dataset / Model</th></tr></thead>
+                    <tbody id="table1Body"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="mt-16">
+            <p class="text-sm font-bold mb-4 italic">表 2. 各數據集 AUROC 數值匯總。</p>
+            <div class="overflow-x-auto">
+                <table class="academic-table">
+                    <thead><tr id="aurocHeader"><th class="dataset-cell">Dataset / Model</th></tr></thead>
+                    <tbody id="table2Body"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="mt-24 pt-10 border-t-2 border-gray-200">
+            <div class="dist-chart-box"><canvas id="distributionChart"></canvas></div>
+            <p class="caption">圖 2. 數據集樣本分佈統計 (由大到小排列)</p>
+        </div>
+    </div>
+
+    <script>
+        const epochLabels = [0, 10, 20, 30, 40, 60, 80, 100, 120, 140, 160, 180, 200, 220, 240, 260, 280, 300, 330, 360];
+        
+        function alignData(origAcc) {
+            const aligned = Array(epochLabels.length).fill(null);
+            aligned[0] = origAcc[0]; // E0
+            aligned[2] = origAcc[1]; // E20
+            aligned[4] = origAcc[2]; // E40
+            for(let i=3; i<origAcc.length; i++) { aligned[i+2] = origAcc[i]; }
+            return aligned;
+        }
+
+        const rawData = [
+            { 
+                id: 'aptos', ds: 'APTOS2019', color: '#e41a1c', totalSize: 3662,
+                accBaseModel: '[RETFound Dinov2 meh]', aurocBaseModel: '[Dinov2]',
+                accBaseline: 0.8524, aurocBaseline: 0.9519, 
+                acc: alignData([0.8263, 0.7309, 0.7494, 0.7640, 0.7736, 0.7796, 0.7814, 0.7861, 0.7947, 0.7914, 0.7930, 0.7941, 0.8009, 0.7978, 0.8040, 0.8025, 0.7998, 0.7996]),
+                auroc: alignData([0.9403, 0.8655, 0.8914, 0.8999, 0.9029, 0.9037, 0.9085, 0.9136, 0.9180, 0.9181, 0.9204, 0.9229, 0.9248, 0.9239, 0.9257, 0.9254, 0.9250, 0.9239]),
+                accFreeze: {10: 0.8302, 20: 0.8356, 30: 0.8296, 60: 0.8296, 80: 0.8355, 140: 0.8338, 160: 0.8367, 180: 0.8313},
+                aurocFreeze: {10: 0.9393, 20: 0.9392, 30: 0.9368}
+            },
+            { 
+                id: 'messidor', ds: 'MESSIDOR2', color: '#ff7f00', totalSize: 1744,
+                accBaseModel: '[RETFound Dinov2 meh]', aurocBaseModel: '[Dinov3]',
+                accBaseline: 0.7707, aurocBaseline: 0.9089, 
+                acc: alignData([0.7228, 0.5775, 0.6003, 0.5996, 0.6053, 0.6045, 0.6136, 0.6129, 0.6193, 0.6186, 0.6186, 0.6247, 0.6315, 0.6346, 0.6235, 0.6285, 0.6247, 0.6296]),
+                auroc: alignData([0.8852, 0.7062, 0.7568, 0.7757, 0.7831, 0.7706, 0.8030, 0.8054, 0.8106, 0.8046, 0.8042, 0.8196, 0.8198, 0.8283, 0.8072, 0.8230, 0.8249, 0.8216]),
+                accFreeze: {10: 0.6875, 20: 0.7114, 30: 0.7004, 60: 0.7114, 80: 0.7057, 140: 0.6977, 160: 0.6939, 180: 0.7137},
+                aurocFreeze: {10: 0.8737, 20: 0.8826, 30: 0.8800}
+            },
+            { 
+                id: 'glaucoma', ds: 'Glaucoma_fundus', color: '#377eb8', totalSize: 1544,
+                accBaseModel: '[RETFound Dinov2 shanghai]', aurocBaseModel: '[RETFound Dinov2 shanghai]',
+                accBaseline: 0.8692, aurocBaseline: 0.9552, 
+                acc: alignData([0.7655, 0.7668, 0.7918, 0.8025, 0.8051, 0.8034, 0.8094, 0.8103, 0.8215, 0.8279, 0.8369, 0.8301, 0.8378, 0.8378, 0.8408, 0.8430, 0.8412, 0.8438]),
+                auroc: alignData([0.9045, 0.8957, 0.9114, 0.9156, 0.9204, 0.9207, 0.9243, 0.9273, 0.9326, 0.9362, 0.9401, 0.9369, 0.9424, 0.9402, 0.9415, 0.9437, 0.9431, 0.9437]),
+                accFreeze: {10: 0.8353, 20: 0.8275, 30: 0.8318, 60: 0.8284, 80: 0.8422, 140: 0.8422, 160: 0.8477, 180: 0.8551},
+                aurocFreeze: {10: 0.9468, 20: 0.9381, 30: 0.9418}
+            },
+            { 
+                id: 'retina', ds: 'Retina', color: '#a65628', totalSize: 601,
+                accBaseModel: '[RETFound Dinov2 meh]', aurocBaseModel: '[Dinov3]',
+                accBaseline: 0.7304, aurocBaseline: 0.9015, 
+                acc: alignData([0.5966, 0.5524, 0.5613, 0.5414, 0.5447, 0.5679, 0.5679, 0.5734, 0.5745, 0.5867, 0.5900, 0.5911, 0.6088, 0.6011, 0.6066, 0.6044, 0.6055, 0.6022]),
+                auroc: alignData([0.7160, 0.7457, 0.7579, 0.7446, 0.7423, 0.7568, 0.7532, 0.7754, 0.7965, 0.8046, 0.8022, 0.8045, 0.8085, 0.8134, 0.8152, 0.8196, 0.8114, 0.8120]),
+                accFreeze: {10: 0.6210, 20: 0.6099, 30: 0.5978, 60: 0.6155, 80: 0.6630, 140: 0.6254, 160: 0.6298, 180: 0.6630},
+                aurocFreeze: {10: 0.7910, 20: 0.8142, 30: 0.7556}
+            },
+            { 
+                id: 'idrid', ds: 'IDRiD_data', color: '#4daf4a', totalSize: 516,
+                accBaseModel: '[RETFound Dinov2 meh]', aurocBaseModel: '[RETFound Dinov2 meh]',
+                accBaseline: 0.6563, aurocBaseline: 0.8541, 
+                acc: alignData([0.4776, 0.3533, 0.3669, 0.3572, 0.3300, 0.3398, 0.3592, 0.3378, 0.3747, 0.3902, 0.4174, 0.4310, 0.4019, 0.4077, 0.3883, 0.4174, 0.4330, 0.4563]),
+                auroc: alignData([0.7914, 0.6150, 0.6191, 0.6180, 0.6437, 0.6439, 0.6561, 0.6556, 0.6740, 0.6828, 0.6804, 0.6978, 0.6836, 0.6818, 0.6917, 0.7122, 0.7070, 0.7170]),
+                accFreeze: {10: 0.5068, 20: 0.5204, 30: 0.4816, 60: 0.5398, 80: 0.5301, 140: 0.5146, 160: 0.5204, 180: 0.5495},
+                aurocFreeze: {10: 0.7678, 20: 0.7677, 30: 0.7563}
+            },
+            { 
+                id: 'papila', ds: 'PAPILA', color: '#984ea3', totalSize: 488,
+                accBaseModel: '[RETFound Dinov2 meh]', aurocBaseModel: '[RETFound Dinov2 meh]',
+                accBaseline: 0.8408, aurocBaseline: 0.8797, 
+                acc: alignData([0.7224, 0.6836, 0.7489, 0.7551, 0.7653, 0.7530, 0.7591, 0.7367, 0.7469, 0.7653, 0.7510, 0.7612, 0.7693, 0.7571, 0.7653, 0.7469, 0.7693, 0.7714]),
+                auroc: alignData([0.7144, 0.6798, 0.7646, 0.7791, 0.7734, 0.7887, 0.7899, 0.7981, 0.7877, 0.7858, 0.7882, 0.8133, 0.8118, 0.8054, 0.8127, 0.8050, 0.8019, 0.7954]),
+                accFreeze: {10: 0.7694, 20: 0.7531, 30: 0.7735, 60: 0.7531, 80: 0.7612, 140: 0.7776, 160: 0.7673, 180: 0.7714},
+                aurocFreeze: {10: 0.7744, 20: 0.7827, 30: 0.7896}
+            }
+        ];
+
+        const statsBase = [
+            { name: 'APTOS2019', train: 2048, val: 514, test: 1100 },
+            { name: 'MESSIDOR2', train: 972, val: 246, test: 526 },
+            { name: 'Glaucoma Fundus', train: 861, val: 218, test: 465 },
+            { name: 'Retina', train: 336, val: 84, test: 181 },
+            { name: 'IDRiD Data', train: 329, val: 84, test: 103 },
+            { name: 'PAPILA', train: 311, val: 79, test: 98 }
+        ];
+
+        const markers = ['circle', 'rect', 'triangle', 'rectRot', 'star', 'crossRot'];
+        let charts = {};
+
+        // 核心改動：將 map 中的值依照 epochLabels 的 index 放入 array
+        function getFreezeDataArray(freezeMap) {
+            return epochLabels.map(e => freezeMap[e] || null);
+        }
+
+        function initUI() {
+            const accHeader = document.getElementById('accHeader');
+            const aurocHeader = document.getElementById('aurocHeader');
+            const accLegend = document.getElementById('accLegendContainer');
+            const aurocLegend = document.getElementById('aurocLegendContainer');
+            const t1Body = document.getElementById('table1Body');
+            const t2Body = document.getElementById('table2Body');
+
+            epochLabels.forEach(e => {
+                const thAcc = document.createElement('th'); thAcc.textContent = `E${e}`; accHeader.appendChild(thAcc);
+                const thAuroc = document.createElement('th'); thAuroc.textContent = `E${e}`; aurocHeader.appendChild(thAuroc);
+            });
+
+            rawData.forEach((d, i) => {
+                // Legend Items...
+                const accItem = document.createElement('div');
+                accItem.className = 'legend-item';
+                accItem.onclick = () => toggleDataset('acc', d.ds, accItem);
+                accItem.innerHTML = `<div class="flex justify-between items-start"><span class="dataset-name">${d.ds}</span><span class="text-[9px] font-bold text-gray-400">#${d.totalSize}</span></div><div class="legend-visual-row"><div class="line-solid" style="background-color:${d.color}"></div><div class="model-tag"><span class="tag-prefix">Base:</span></div></div><div class="legend-visual-row"><div class="line-dashed" style="border-color:${d.color}"></div><div class="model-tag"><span class="tag-prefix">Goal:</span> ${d.accBaseModel}</div></div><div class="legend-visual-row"><div class="line-dotted" style="border-color:${d.color}"></div><div class="model-tag"><span class="tag-prefix">Freeze:</span> enc10</div></div>`;
+                accLegend.appendChild(accItem);
+
+                const aurocItem = document.createElement('div');
+                aurocItem.className = 'legend-item';
+                aurocItem.onclick = () => toggleDataset('auroc', d.ds, aurocItem);
+                aurocItem.innerHTML = `<div class="flex justify-between items-start"><span class="dataset-name">${d.ds}</span><span class="text-[9px] font-bold text-gray-400">#${d.totalSize}</span></div><div class="legend-visual-row"><div class="line-solid" style="background-color:${d.color}"></div><div class="model-tag"><span class="tag-prefix">Base:</span></div></div><div class="legend-visual-row"><div class="line-dashed" style="border-color:${d.color}"></div><div class="model-tag"><span class="tag-prefix">Goal:</span> ${d.aurocBaseModel}</div></div><div class="legend-visual-row"><div class="line-dotted" style="border-color:${d.color}"></div><div class="model-tag"><span class="tag-prefix">Freeze:</span> enc10</div></div>`;
+                aurocLegend.appendChild(aurocItem);
+
+                // Table Rows
+                let row1 = document.createElement('tr');
+                row1.innerHTML = `<td class="dataset-cell">${d.ds} (Main)</td>` + d.acc.map(v => `<td>${v ? v.toFixed(3) : '-'}</td>`).join('');
+                t1Body.appendChild(row1);
+
+                let row1f = document.createElement('tr');
+                row1f.className = 'freeze-cell';
+                row1f.innerHTML = `<td class="dataset-cell font-bold text-red-600">${d.ds} (Freeze)</td>` + getFreezeDataArray(d.accFreeze).map(v => `<td>${v ? v.toFixed(3) : ''}</td>`).join('');
+                t1Body.appendChild(row1f);
+
+                let row2 = document.createElement('tr');
+                row2.innerHTML = `<td class="dataset-cell">${d.ds} (Main)</td>` + d.auroc.map(v => `<td>${v ? v.toFixed(4) : '-'}</td>`).join('');
+                t2Body.appendChild(row2);
+
+                let row2f = document.createElement('tr');
+                row2f.className = 'freeze-cell';
+                row2f.innerHTML = `<td class="dataset-cell font-bold text-red-600">${d.ds} (Freeze)</td>` + getFreezeDataArray(d.aurocFreeze).map(v => `<td>${v ? v.toFixed(4) : ''}</td>`).join('');
+                t2Body.appendChild(row2f);
+            });
+        }
+
+        function toggleDataset(type, dsName, el) {
+            el.classList.toggle('hidden-state');
+            const isHidden = el.classList.contains('hidden-state');
+            charts[type].data.datasets.forEach(dataset => {
+                if (dataset.label === dsName || dataset.label === `${dsName}_base` || dataset.label === `${dsName}_freeze`) {
+                    dataset.hidden = isHidden;
+                }
+            });
+            charts[type].update();
+        }
+
+        function initCharts() {
+            const opt = (yMin, yMax) => ({
+                responsive: true, maintainAspectRatio: false,
+                interaction: { mode: 'index', intersect: false },
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { grid: { display: false }, ticks: { font: { weight: 'bold' } }, border: { width: 2, color: '#000' } },
+                    y: { min: yMin, max: yMax, grid: { color: '#f3f3f3' }, border: { width: 2, color: '#000' }, ticks: { callback: v => v.toFixed(2) } }
+                }
+            });
+
+            const accDs = [];
+            const aurocDs = [];
+            rawData.forEach((d, i) => {
+                // Main
+                accDs.push({ label: d.ds, data: d.acc, borderColor: d.color, backgroundColor: d.color, borderWidth: 2, pointStyle: markers[i % markers.length], pointRadius: 4, tension: 0.1, spanGaps: true });
+                // Baseline
+                accDs.push({ label: `${d.ds}_base`, data: Array(epochLabels.length).fill(d.accBaseline), borderColor: d.color, borderWidth: 1, borderDash: [5, 5], pointRadius: 0 });
+                // Freeze (Point Line)
+                accDs.push({ label: `${d.ds}_freeze`, data: getFreezeDataArray(d.accFreeze), borderColor: d.color, borderWidth: 3, borderDash: [2, 2], pointStyle: 'cross', pointRadius: 8, showLine: true, spanGaps: true });
+
+                aurocDs.push({ label: d.ds, data: d.auroc, borderColor: d.color, backgroundColor: d.color, borderWidth: 2.5, pointStyle: markers[i % markers.length], pointRadius: 5, tension: 0.1, spanGaps: true });
+                aurocDs.push({ label: `${d.ds}_base`, data: Array(epochLabels.length).fill(d.aurocBaseline), borderColor: d.color, borderWidth: 1, borderDash: [5, 5], pointRadius: 0 });
+                aurocDs.push({ label: `${d.ds}_freeze`, data: getFreezeDataArray(d.aurocFreeze), borderColor: d.color, borderWidth: 3, borderDash: [2, 2], pointStyle: 'cross', pointRadius: 8, showLine: true, spanGaps: true });
+            });
+
+            charts.acc = new Chart(document.getElementById('accuracyChart'), { type: 'line', data: { labels: epochLabels, datasets: accDs }, options: opt(0.3, 1.0) });
+            charts.auroc = new Chart(document.getElementById('aurocChart'), { type: 'line', data: { labels: epochLabels, datasets: aurocDs }, options: opt(0.6, 1.0) });
+
+            new Chart(document.getElementById('distributionChart'), {
+                type: 'bar',
+                data: {
+                    labels: statsBase.map(s => s.name),
+                    datasets: [
+                        { label: 'Training', data: statsBase.map(s => s.train), backgroundColor: '#3b82f6' },
+                        { label: 'Validation', data: statsBase.map(s => s.val), backgroundColor: '#60a5fa' },
+                        { label: 'Test', data: statsBase.map(s => s.test), backgroundColor: '#93c5fd' }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { position: 'top' } },
+                    scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true, title: { display: true, text: '樣本數量 (Samples)' } } }
+                }
+            });
+        }
+
+        window.onload = function() { initUI(); initCharts(); };
+    </script>
+</body>
+</html>
