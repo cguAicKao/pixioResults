@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Model Performance Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .chart-container {
+            position: relative;
+            height: 45vh;
+            width: 100%;
+        }
+        .stats-container {
+            position: relative;
+            height: 400px;
+            width: 100%;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+<body class="bg-slate-100 p-4 md:p-8 font-sans text-slate-900">
+    <div class="max-w-6xl mx-auto space-y-8">
+        
+        <!-- 實驗背景標頭區 -->
+        <div class="bg-gradient-to-r from-slate-800 to-slate-900 rounded-2xl shadow-2xl p-8 text-white relative overflow-hidden">
+            <div class="relative z-10">
+                <div class="inline-block px-3 py-1 bg-blue-500/30 border border-blue-400/50 rounded-full text-blue-200 text-xs font-bold tracking-widest uppercase mb-4">
+                    Experiment Strategy: Fine-Tuning
+                </div>
+                <h1 class="text-3xl md:text-4xl font-extrabold mb-3">深度學習模型訓練表現分析儀表板</h1>
+                <p class="text-slate-300 max-w-2xl leading-relaxed">
+                    本實驗採取兩階段訓練策略：首階段先<span class="text-blue-300 font-bold">冷凍 (Frozen) 前 10 個 Epochs</span>，穩定基礎特徵權重後，再解凍進入<span class="text-indigo-300 font-bold">後續 10 個 Epochs 的深度訓練</span>。下方圖表重點比較轉折期 (Epoch 11, 12) 與收斂期 (Epoch 18, 19) 之表現差異。
+                </p>
+            </div>
+            <!-- 背景裝飾 -->
+            <div class="absolute right-0 top-0 -mr-20 -mt-20 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl"></div>
+            <div class="absolute left-0 bottom-0 -ml-20 -mb-20 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl"></div>
+        </div>
+
+        <!-- 第一區塊：訓練表現 -->
+        <div class="bg-white rounded-2xl shadow-xl p-6 md:p-8 border border-slate-200">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-6">
+                <div>
+                    <h2 class="text-2xl font-bold text-slate-800 flex items-center gap-2">
+                        <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                        性能指標比較 (Epoch Analysis)
+                    </h2>
+                    <p class="text-slate-500 text-sm mt-1">樣本量由左至右降序排列 (Large → Small)</p>
+                </div>
+                <div class="flex bg-slate-100 p-1.5 rounded-xl border border-slate-200">
+                    <button onclick="updateChart('accuracy')" id="btn-accuracy" class="px-6 py-2.5 rounded-lg transition-all font-bold text-sm bg-white shadow-md text-blue-600">ACCURACY</button>
+                    <button onclick="updateChart('auroc')" id="btn-auroc" class="px-6 py-2.5 rounded-lg transition-all font-bold text-sm text-slate-500 hover:text-blue-600">AUROC</button>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <canvas id="performanceChart"></canvas>
+            </div>
+
+            <!-- 關鍵亮點卡片 -->
+            <div class="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-8 border-t border-slate-100">
+                <div class="group p-4 bg-gradient-to-br from-blue-50 to-white rounded-xl border border-blue-100 hover:shadow-md transition-all">
+                    <p class="text-[10px] text-blue-500 font-black uppercase tracking-widest mb-1">Best Accuracy Point</p>
+                    <p class="text-xl font-mono font-black text-blue-900">Epoch-18</p>
+                    <div class="h-1 w-8 bg-blue-500 my-2 rounded-full"></div>
+                    <p class="text-xs text-slate-600 font-medium">Glaucoma, MESSIDOR2</p>
+                </div>
+                <div class="group p-4 bg-gradient-to-br from-indigo-50 to-white rounded-xl border border-indigo-100 hover:shadow-md transition-all">
+                    <p class="text-[10px] text-indigo-500 font-black uppercase tracking-widest mb-1">Best AUROC Point</p>
+                    <p class="text-xl font-mono font-black text-indigo-900">Epoch-19</p>
+                    <div class="h-1 w-8 bg-indigo-500 my-2 rounded-full"></div>
+                    <p class="text-xs text-slate-600 font-medium">APTOS2019, MESSIDOR2</p>
+                </div>
+                <div class="group p-4 bg-gradient-to-br from-emerald-50 to-white rounded-xl border border-emerald-100 hover:shadow-md transition-all">
+                    <p class="text-[10px] text-emerald-500 font-black uppercase tracking-widest mb-1">Scale Scale</p>
+                    <p class="text-xl font-black text-emerald-900">6 Datasets</p>
+                    <div class="h-1 w-8 bg-emerald-500 my-2 rounded-full"></div>
+                    <p class="text-xs text-slate-600 font-medium">Total: 8,555 Samples</p>
+                </div>
+                <div class="group p-4 bg-gradient-to-br from-slate-50 to-white rounded-xl border border-slate-200 hover:shadow-md transition-all">
+                    <p class="text-[10px] text-slate-500 font-black uppercase tracking-widest mb-1">Reliability</p>
+                    <p class="text-xl font-black text-slate-800">Mean ± Std</p>
+                    <div class="h-1 w-8 bg-slate-400 my-2 rounded-full"></div>
+                    <p class="text-xs text-slate-600 font-medium">Cross-Validation Analysis</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 第二區塊：數據集統計 -->
+        <div class="bg-white rounded-2xl shadow-xl p-6 md:p-8 border border-slate-200">
+            <div class="mb-10">
+                <h2 class="text-2xl font-bold text-slate-800 flex items-center gap-2">
+                    <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"></path></svg>
+                    數據集構成統計 (Dataset Distribution)
+                </h2>
+                <p class="text-slate-500 text-sm mt-1">展示各數據集於訓練、驗證與測試階段的樣本堆疊總量</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+                <div class="lg:col-span-2 stats-container">
+                    <canvas id="datasetStatsChart"></canvas>
+                </div>
+                <div class="bg-slate-50 rounded-xl border border-slate-200 overflow-hidden">
+                    <div class="px-4 py-3 bg-slate-200/50 border-b border-slate-200 text-xs font-black text-slate-600 uppercase tracking-widest">
+                        詳細樣本數據
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-xs text-left">
+                            <thead class="text-slate-500 border-b">
+                                <tr>
+                                    <th class="px-4 py-3">數據集</th>
+                                    <th class="px-4 py-3 text-right">總計</th>
+                                </tr>
+                            </thead>
+                            <tbody id="stats-table-body" class="divide-y divide-slate-100">
+                                <!-- JS fill -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- 核心數據 ---
+        const datasets = ["APTOS2019", "MESSIDOR2", "Glaucoma_fundus", "Retina", "IDRiD_data", "PAPILA"];
+        const epochs = ["epoch-11", "epoch-12", "epoch-18", "epoch-19"];
+        
+        const rawData = {
+            accuracy: {
+                "epoch-11": { mean: [0.8345, 0.6988, 0.7935, 0.5723, 0.4621, 0.7530], std: [0.0067, 0.0062, 0.0157, 0.0138, 0.0483, 0.0133] },
+                "epoch-12": { mean: [0.8336, 0.7026, 0.8012, 0.5867, 0.4582, 0.7551], std: [0.0059, 0.0043, 0.0147, 0.0081, 0.0378, 0.0072] },
+                "epoch-18": { mean: [0.8341, 0.7114, 0.8103, 0.5878, 0.4970, 0.7571], std: [0.0079, 0.0118, 0.0139, 0.0121, 0.0524, 0.0111] },
+                "epoch-19": { mean: [0.8336, 0.7079, 0.7905, 0.5823, 0.4737, 0.7591], std: [0.0048, 0.0076, 0.0086, 0.0168, 0.0332, 0.0211] }
+            },
+            auroc: {
+                "epoch-11": { mean: [0.9393, 0.8697, 0.9141, 0.6918, 0.7905, 0.6939], std: [0.0016, 0.0041, 0.0054, 0.0210, 0.0145, 0.0174] },
+                "epoch-12": { mean: [0.9384, 0.8730, 0.9160, 0.6975, 0.7971, 0.6903], std: [0.0016, 0.0050, 0.0039, 0.0113, 0.0127, 0.0136] },
+                "epoch-18": { mean: [0.9397, 0.8712, 0.9198, 0.6966, 0.7943, 0.7083], std: [0.0023, 0.0047, 0.0047, 0.0049, 0.0083, 0.0154] },
+                "epoch-19": { mean: [0.9402, 0.8763, 0.9123, 0.6950, 0.7894, 0.6778], std: [0.0023, 0.0030, 0.0030, 0.0167, 0.0167, 0.0158] }
+            }
+        };
+
+        const statsBase = [
+            { name: 'APTOS2019', train: 2048, val: 514, test: 1100 },
+            { name: 'MESSIDOR2', train: 972, val: 246, test: 526 },
+            { name: 'Glaucoma Fundus', train: 861, val: 218, test: 465 },
+            { name: 'Retina', train: 336, val: 84, test: 181 },
+            { name: 'IDRiD Data', train: 329, val: 84, test: 103 },
+            { name: 'PAPILA', train: 311, val: 79, test: 98 }
+        ];
+
+        const epochColors = [
+            { bg: 'rgba(148, 163, 184, 0.6)', border: '#64748b' }, // epoch-11 (Slate)
+            { bg: 'rgba(100, 116, 139, 0.6)', border: '#475569' }, // epoch-12 (Darker Slate)
+            { bg: 'rgba(37, 99, 235, 0.7)', border: '#1d4ed8' },  // epoch-18 (Vibrant Blue)
+            { bg: 'rgba(79, 70, 229, 0.7)', border: '#4338ca' }   // epoch-19 (Indigo)
+        ];
+
+        let perfChart = null;
+
+        // 誤差線插件
+        const errorBarPlugin = {
+            id: 'errorBars',
+            afterDatasetsDraw: (chart) => {
+                const { ctx } = chart;
+                chart.data.datasets.forEach((dataset, i) => {
+                    const meta = chart.getDatasetMeta(i);
+                    if (!meta.hidden && dataset.errorBars) {
+                        meta.data.forEach((element, index) => {
+                            const mean = dataset.data[index];
+                            const std = dataset.errorBars[index];
+                            const yTop = chart.scales.y.getPixelForValue(mean + std);
+                            const yBottom = chart.scales.y.getPixelForValue(mean - std);
+                            const x = element.x;
+                            ctx.save();
+                            ctx.strokeStyle = '#0f172a';
+                            ctx.lineWidth = 1;
+                            ctx.beginPath();
+                            ctx.moveTo(x, yTop); ctx.lineTo(x, yBottom);
+                            ctx.moveTo(x - 2, yTop); ctx.lineTo(x + 2, yTop);
+                            ctx.moveTo(x - 2, yBottom); ctx.lineTo(x + 2, yBottom);
+                            ctx.stroke();
+                            ctx.restore();
+                        });
+                    }
+                });
+            }
+        };
+
+        function updateChart(type) {
+            const ctx = document.getElementById('performanceChart').getContext('2d');
+            
+            // 按鈕樣式切換
+            const isAcc = type === 'accuracy';
+            document.getElementById('btn-accuracy').className = isAcc ? 'px-6 py-2.5 rounded-lg transition-all font-bold text-sm bg-white shadow-md text-blue-600 border-none' : 'px-6 py-2.5 rounded-lg transition-all font-bold text-sm text-slate-500 hover:text-blue-600 border-none';
+            document.getElementById('btn-auroc').className = !isAcc ? 'px-6 py-2.5 rounded-lg transition-all font-bold text-sm bg-white shadow-md text-blue-600 border-none' : 'px-6 py-2.5 rounded-lg transition-all font-bold text-sm text-slate-500 hover:text-blue-600 border-none';
+
+            const chartData = {
+                labels: datasets.map(d => d.replace('_', ' ')),
+                datasets: epochs.map((epoch, idx) => ({
+                    label: epoch.toUpperCase(),
+                    data: rawData[type][epoch].mean,
+                    errorBars: rawData[type][epoch].std,
+                    backgroundColor: epochColors[idx].bg,
+                    borderColor: epochColors[idx].border,
+                    borderWidth: 1.5,
+                    borderRadius: 4,
+                }))
+            };
+
+            if (perfChart) perfChart.destroy();
+            perfChart = new Chart(ctx, {
+                type: 'bar',
+                data: chartData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { 
+                            min: isAcc ? 0.4 : 0.6, 
+                            max: 1.0,
+                            grid: { color: 'rgba(0,0,0,0.04)', drawBorder: false },
+                            ticks: { font: { weight: '600' } }
+                        },
+                        x: { grid: { display: false } }
+                    },
+                    plugins: { 
+                        legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20, font: { weight: '600' } } },
+                        tooltip: {
+                            backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                            padding: 12,
+                            cornerRadius: 8,
+                            callbacks: {
+                                label: (ctx) => {
+                                    const std = ctx.dataset.errorBars[ctx.dataIndex];
+                                    return ` ${ctx.dataset.label}: ${ctx.parsed.y.toFixed(4)} (±${std.toFixed(4)})`;
+                                }
+                            }
+                        }
+                    }
+                },
+                plugins: [errorBarPlugin]
+            });
+        }
+
+        function initStatsChart() {
+            const ctx = document.getElementById('datasetStatsChart').getContext('2d');
+            
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: statsBase.map(s => s.name),
+                    datasets: [
+                        { label: 'Train', data: statsBase.map(s => s.train), backgroundColor: '#3b82f6' },
+                        { label: 'Val', data: statsBase.map(s => s.val), backgroundColor: '#10b981' },
+                        { label: 'Test', data: statsBase.map(s => s.test), backgroundColor: '#f59e0b' }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { stacked: true, grid: { display: false } },
+                        y: { stacked: true, grid: { color: 'rgba(0,0,0,0.04)' } }
+                    },
+                    plugins: {
+                        legend: { position: 'bottom', labels: { boxWidth: 12, font: { weight: '600' } } }
+                    }
+                }
+            });
+
+            const tbody = document.getElementById('stats-table-body');
+            tbody.innerHTML = '';
+            statsBase.forEach(s => {
+                const total = s.train + s.val + s.test;
+                tbody.innerHTML += `
+                    <tr class="hover:bg-blue-50/50 transition-colors">
+                        <td class="px-4 py-3 font-medium text-slate-700">${s.name}</td>
+                        <td class="px-4 py-3 text-right font-mono font-bold text-slate-900">${total.toLocaleString()}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        window.onload = () => {
+            updateChart('accuracy');
+            initStatsChart();
+        };
+    </script>
+</body>
+</html>
