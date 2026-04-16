@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>模型訓練結果可視化</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .chart-container {
+            position: relative;
+            margin: auto;
+            height: 420px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 p-4 md:p-8">
+    <div class="max-w-6xl mx-auto">
+        <header class="mb-8 text-center">
+            <h1 class="text-3xl font-bold text-gray-800">模型效能對比分析 (Mean ± Std)</h1>
+            <p class="text-gray-600 mt-2">比較 freeze-enc10 與 freeze-enc30 在不同 Epoch 的準確度與 AUROC 表現</p>
+        </header>
+
+        <div id="charts-grid" class="grid grid-cols-1 gap-8">
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                <h2 class="text-xl font-bold mb-4 text-gray-700 border-b pb-2">Accuracy (All Datasets)</h2>
+                <div class="chart-container">
+                    <canvas id="chart-accuracy"></canvas>
+                </div>
+                <div class="mt-4 text-sm text-gray-600 flex flex-wrap gap-4">
+                    <span class="flex items-center gap-2">
+                        <span class="inline-block w-5 h-0.5 bg-slate-600"></span>
+                        Enc10 = 實線
+                    </span>
+                    <span class="flex items-center gap-2">
+                        <span class="inline-block w-5 h-0.5 border border-slate-600 border-dashed"></span>
+                        Enc30 = 虛線
+                    </span>
+                </div>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                <h2 class="text-xl font-bold mb-4 text-gray-700 border-b pb-2">AUROC (All Datasets)</h2>
+                <div class="chart-container">
+                    <canvas id="chart-auroc"></canvas>
+                </div>
+                <div class="mt-4 text-sm text-gray-600 flex flex-wrap gap-4">
+                    <span class="flex items-center gap-2">
+                        <span class="inline-block w-5 h-0.5 bg-slate-600"></span>
+                        Enc10 = 實線
+                    </span>
+                    <span class="flex items-center gap-2">
+                        <span class="inline-block w-5 h-0.5 border border-slate-600 border-dashed"></span>
+                        Enc30 = 虛線
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 數據分佈圖表 -->
+        <div class="mt-12 pt-8 border-t-2 border-gray-300">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">數據集樣本分佈統計</h2>
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200" style="position: relative; height: 400px;">
+                <canvas id="distributionChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const data = {
+            "APTOS2019": {
+                "accuracy_enc10": { mean: [0.8301818181818182, 0.8354545454545453, 0.8338181818181818, 0.8367272727272728, 0.8312727272727273], std: [0.008489176385402714, 0.009136250564655338, 0.006845400217097014, 0.0078097205799689, 0.004572645941803382] },
+                "accuracy_enc30": { mean: [0.8336363636363636, 0.8389090909090908, 0.8430909090909091, 0.8509090909090908, 0.8394545454545455], std: [0.005785419118799069, 0.014536929319824973, 0.00682121144811061, 0.007301081092822306, 0.007175486276607692] },
+                "auroc_enc10": { mean: [0.9393032650869537, 0.9434503810010483, 0.9430172779305528, 0.9421266814160572, 0.9419222608592737], std: [0.0010108477183966617, 0.0028650376617225413, 0.003183750467313946, 0.0019312804187694042, 0.00318644964036595] },
+                "auroc_enc30": { mean: [0.942424033967975, 0.9450266364536579, 0.9441858613244392, 0.9474440161492504, 0.9464344379085574], std: [0.0011393548272201246, 0.002176639782539997, 0.0019088536603549357, 0.0021922713659226277, 0.0020262352824681256] }
+            },
+            "MESSIDOR2": {
+                "accuracy_enc10": { mean: [0.6874524714828898, 0.7057034220532319, 0.6977186311787072, 0.6939163498098859, 0.7136882129277566], std: [0.01286610214120804, 0.012567675955162278, 0.009969665857130727, 0.020298627855572817, 0.011918196211906805] },
+                "accuracy_enc30": { mean: [0.7030418250950571, 0.6992395437262358, 0.7117870722433459, 0.7068441064638783, 0.6984790874524714], std: [0.009157106143568312, 0.014750695620738274, 0.015883344923350154, 0.007769131840951582, 0.0039422892306706914] },
+                "auroc_enc10": { mean: [0.8737087375689132, 0.8784416431144486, 0.873982528138314, 0.874410201169383, 0.8867437677896095], std: [0.0009274499805631424, 0.0038107055213325307, 0.005742843784446177, 0.00829388460560966, 0.004707145263023756] },
+                "auroc_enc30": { mean: [0.8790596644369671, 0.8780193001650115, 0.8853856907148476, 0.8818588151135494, 0.8796849590822164], std: [0.0031041408442269982, 0.003314942989449455, 0.004787120040909231, 0.0068560811748488775, 0.006472366439693363] }
+            },
+            "Glaucoma_fundus": {
+                "accuracy_enc10": { mean: [0.835268817204301, 0.8421505376344086, 0.8421505376344086, 0.8477419354838709, 0.8550537634408603], std: [0.005607916047486102, 0.0051791804639967015, 0.008944788964767875, 0.009299676692662164, 0.005810432725206991] },
+                "accuracy_enc30": { mean: [0.8227956989247313, 0.8421505376344086, 0.8503225806451613, 0.8352688172043011, 0.8249462365591398], std: [0.011338861356098132, 0.004192169610670552, 0.012031484499526367, 0.012222169667426088, 0.025290542022308887] },
+                "auroc_enc10": { mean: [0.9468125132694608, 0.94698598864338, 0.9464497866943722, 0.947473467905106, 0.9533447210370827], std: [0.0015239917555098356, 0.0017326851670542672, 0.0039138766357186, 0.003082809394783903, 0.002510451115156429] },
+                "auroc_enc30": { mean: [0.9392797409698425, 0.9478946485512465, 0.9524539649705706, 0.9469057598330369, 0.9440580694277528], std: [0.0067716678492905896, 0.003042102097609096, 0.0024742336720426877, 0.002057201318141556, 0.002430600461515205] }
+            },
+            "Retina": {
+                "accuracy_enc10": { mean: [0.6209944751381216, 0.6629834254143646, 0.6254143646408841, 0.6298342541436464, 0.6629834254143646], std: [0.02230566766650428, 0.029494691303953918, 0.02356986630685252, 0.011049723756906098, 0.028440967240295597] },
+                "accuracy_enc30": { mean: [0.6088397790055249, 0.6276243093922652, 0.6464088397790055, 0.67292817679558, 0.6939226519337016], std: [0.0072035385692846565, 0.03419170927462056, 0.02376332946696857, 0.03894929664533612, 0.032592002660226806] },
+                "auroc_enc10": { mean: [0.7910235113814477, 0.8586380356096228, 0.8332498383431945, 0.8528913804513035, 0.8623400367108977], std: [0.010911969139122159, 0.01671598004253824, 0.022350449274337467, 0.010944686633906938, 0.020005119459856117] },
+                "auroc_enc30": { mean: [0.797783706193875, 0.851034100260868, 0.8515014647580339, 0.8751438908595499, 0.8869975750827065], std: [0.01755688996538926, 0.021099845591144174, 0.032363921490145005, 0.025396229349, 0.017216834239] }
+            },
+            "IDRiD_data": {
+                "accuracy_enc10": { mean: [0.5067961165048543, 0.5300970873786408, 0.5145631067961165, 0.520388349514563, 0.5495145631067961], std: [0.039675372313985525, 0.028800770823672488, 0.026588473665299327, 0.0176367981792087, 0.014724029988449594] },
+                "accuracy_enc30": { mean: [0.47766990291262135, 0.5184466019417476, 0.5650485436893204, 0.5398058252427184, 0.5572815533980583], std: [0.029448059976899248, 0.044278657285403394, 0.04254155786447891, 0.016245825757943203, 0.013025638703882262] },
+                "auroc_enc10": { mean: [0.7678380447439266, 0.7894520471859261, 0.7906144205862383, 0.7815316106718345, 0.7981323557773108], std: [0.02149197130986144, 0.005451288634205673, 0.013290290082380408, 0.009751283266287306, 0.01490224660057504] },
+                "auroc_enc30": { mean: [0.7855564475851702, 0.7870340633333213, 0.7980188086231118, 0.788638368410139, 0.8022971347167044], std: [0.01705470114253692, 0.01487697624867278, 0.01428435833987413, 0.00861040349638823, 0.013127073539340294] }
+            },
+            "PAPILA": {
+                "accuracy_enc10": { mean: [0.7693877551020408, 0.7612244897959183, 0.7775510204081633, 0.7673469387755102, 0.7714285714285715], std: [0.030270197906512947, 0.011634443113256506, 0.00853734720953139, 0.008537347209531405, 0.01853663482100505] },
+                "accuracy_enc30": { mean: [0.7857142857142857, 0.7877551020408162, 0.7755102040816326, 0.7816326530612245, 0.7755102040816326], std: [0.02499479329370593, 0.00853734720953139, 0.02601540568159584, 0.02349156006779863, 0.022817020178569312] },
+                "auroc_enc10": { mean: [0.7743756694770016, 0.8035156322257737, 0.8120668390753651, 0.8259725347963564, 0.8192914502712704], std: [0.03231896110870491, 0.037452319294054924, 0.04167718745172598, 0.02754346926256487, 0.023061968537741492] },
+                "auroc_enc30": { mean: [0.8333916208530049, 0.8169941623052808, 0.8049541721798773, 0.8155685709080972, 0.8091265510228176], std: [0.027110090487475924, 0.018531553365392233, 0.028957194628957194, 0.04052215413215304, 0.0349542909202228] }
+            }
+        };
+
+        const epochs = ['Epoch 10', 'Epoch 80', 'Epoch 140', 'Epoch 160', 'Epoch 180'];
+
+        const palette = [
+            { name: 'APTOS2019', border: 'rgba(54, 162, 235, 1)', fill: 'rgba(54, 162, 235, 0.1)' },
+            { name: 'MESSIDOR2', border: 'rgba(255, 99, 132, 1)', fill: 'rgba(255, 99, 132, 0.1)' },
+            { name: 'Glaucoma_fundus', border: 'rgba(255, 159, 64, 1)', fill: 'rgba(255, 159, 64, 0.1)' },
+            { name: 'Retina', border: 'rgba(75, 192, 75, 1)', fill: 'rgba(75, 192, 75, 0.1)' },
+            { name: 'IDRiD_data', border: 'rgba(153, 102, 255, 1)', fill: 'rgba(153, 102, 255, 0.1)' },
+            { name: 'PAPILA', border: 'rgba(255, 205, 86, 1)', fill: 'rgba(255, 205, 86, 0.1)' }
+        ];
+
+        const accuracyDatasets = [];
+        const aurocDatasets = [];
+        const allAccuracy = [];
+        const allAUROC = [];
+
+        Object.entries(data).forEach(([datasetName, datasetInfo], index) => {
+            const style = palette[index % palette.length];
+
+            accuracyDatasets.push({
+                label: `${datasetName} Enc10`,
+                datasetName,
+                data: datasetInfo.accuracy_enc10.mean,
+                borderColor: style.border,
+                backgroundColor: style.fill,
+                borderWidth: 3,
+                fill: false,
+                tension: 0.1,
+                pointStyle: 'circle',
+                pointRadius: 6
+            });
+            accuracyDatasets.push({
+                label: `${datasetName} Enc30`,
+                datasetName,
+                data: datasetInfo.accuracy_enc30.mean,
+                borderColor: style.border,
+                backgroundColor: style.fill,
+                borderWidth: 3,
+                borderDash: [12, 6],
+                fill: false,
+                tension: 0.1,
+                pointStyle: 'rect',
+                pointRadius: 6
+            });
+
+            aurocDatasets.push({
+                label: `${datasetName} Enc10`,
+                datasetName,
+                data: datasetInfo.auroc_enc10.mean,
+                borderColor: style.border,
+                backgroundColor: style.fill,
+                borderWidth: 3,
+                fill: false,
+                tension: 0.1,
+                pointStyle: 'circle',
+                pointRadius: 6
+            });
+            aurocDatasets.push({
+                label: `${datasetName} Enc30`,
+                datasetName,
+                data: datasetInfo.auroc_enc30.mean,
+                borderColor: style.border,
+                backgroundColor: style.fill,
+                borderWidth: 3,
+                borderDash: [12, 6],
+                fill: false,
+                tension: 0.1,
+                pointStyle: 'rect',
+                pointRadius: 6
+            });
+
+            allAccuracy.push(...datasetInfo.accuracy_enc10.mean, ...datasetInfo.accuracy_enc30.mean);
+            allAUROC.push(...datasetInfo.auroc_enc10.mean, ...datasetInfo.auroc_enc30.mean);
+        });
+
+        const accMin = Math.min(...allAccuracy);
+        const accMax = Math.max(...allAccuracy);
+        const aurocMin = Math.min(...allAUROC);
+        const aurocMax = Math.max(...allAUROC);
+
+        const accRange = {
+            min: Math.max(0, accMin - 0.01),
+            max: Math.min(1, accMax + 0.01),
+            step: 0.01
+        };
+
+        const aurocRange = {
+            min: Math.max(0, aurocMin - 0.01),
+            max: Math.min(1, aurocMax + 0.01),
+            step: 0.01
+        };
+
+        new Chart(document.getElementById('chart-accuracy'), {
+            type: 'line',
+            data: {
+                labels: epochs,
+                datasets: accuracyDatasets
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            generateLabels: function(chart) {
+                                const labels = [];
+                                const seen = {};
+                                chart.data.datasets.forEach((dataset, index) => {
+                                    const name = dataset.datasetName;
+                                    if (!seen[name]) {
+                                        seen[name] = true;
+                                        const hidden = chart.data.datasets
+                                            .filter(d => d.datasetName === name)
+                                            .every(d => d.hidden);
+                                        labels.push({
+                                            text: name,
+                                            fillStyle: dataset.borderColor,
+                                            hidden,
+                                            strokeStyle: dataset.borderColor,
+                                            lineCap: dataset.borderCapStyle,
+                                            lineDash: dataset.borderDash || [],
+                                            lineDashOffset: dataset.borderDashOffset || 0,
+                                            pointStyle: dataset.pointStyle,
+                                            datasetIndex: index
+                                        });
+                                    }
+                                });
+                                return labels;
+                            }
+                        },
+                        onClick: function(e, legendItem, legend) {
+                            const chart = legend.chart;
+                            const targetName = chart.data.datasets[legendItem.datasetIndex].datasetName;
+                            chart.data.datasets.forEach(dataset => {
+                                if (dataset.datasetName === targetName) {
+                                    dataset.hidden = !dataset.hidden;
+                                }
+                            });
+                            chart.update();
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const datasetName = context.dataset.datasetName;
+                                const dsKey = context.dataset.label.endsWith('Enc10') ? 'accuracy_enc10' : 'accuracy_enc30';
+                                const mean = data[datasetName][dsKey].mean[context.dataIndex];
+                                const std = data[datasetName][dsKey].std[context.dataIndex];
+                                return `${context.dataset.label}: ${mean.toFixed(4)} ± ${std.toFixed(4)}`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        min: accRange.min,
+                        max: accRange.max,
+                        ticks: {
+                            stepSize: accRange.step,
+                            callback: function(value) { return value.toFixed(2); }
+                        },
+                        title: { display: true, text: 'Accuracy' }
+                    }
+                }
+            }
+        });
+
+        new Chart(document.getElementById('chart-auroc'), {
+            type: 'line',
+            data: {
+                labels: epochs,
+                datasets: aurocDatasets
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            generateLabels: function(chart) {
+                                const labels = [];
+                                const seen = {};
+                                chart.data.datasets.forEach((dataset, index) => {
+                                    const name = dataset.datasetName;
+                                    if (!seen[name]) {
+                                        seen[name] = true;
+                                        const hidden = chart.data.datasets
+                                            .filter(d => d.datasetName === name)
+                                            .every(d => d.hidden);
+                                        labels.push({
+                                            text: name,
+                                            fillStyle: dataset.borderColor,
+                                            hidden,
+                                            strokeStyle: dataset.borderColor,
+                                            lineCap: dataset.borderCapStyle,
+                                            lineDash: dataset.borderDash || [],
+                                            lineDashOffset: dataset.borderDashOffset || 0,
+                                            pointStyle: dataset.pointStyle,
+                                            datasetIndex: index
+                                        });
+                                    }
+                                });
+                                return labels;
+                            }
+                        },
+                        onClick: function(e, legendItem, legend) {
+                            const chart = legend.chart;
+                            const targetName = chart.data.datasets[legendItem.datasetIndex].datasetName;
+                            chart.data.datasets.forEach(dataset => {
+                                if (dataset.datasetName === targetName) {
+                                    dataset.hidden = !dataset.hidden;
+                                }
+                            });
+                            chart.update();
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const datasetName = context.dataset.datasetName;
+                                const dsKey = context.dataset.label.endsWith('Enc10') ? 'auroc_enc10' : 'auroc_enc30';
+                                const mean = data[datasetName][dsKey].mean[context.dataIndex];
+                                const std = data[datasetName][dsKey].std[context.dataIndex];
+                                return `${context.dataset.label}: ${mean.toFixed(4)} ± ${std.toFixed(4)}`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        min: aurocRange.min,
+                        max: aurocRange.max,
+                        ticks: {
+                            stepSize: aurocRange.step,
+                            callback: function(value) { return value.toFixed(2); }
+                        },
+                        title: { display: true, text: 'AUROC' }
+                    }
+                }
+            }
+        });
+
+        // 樣本分佈數據 (用於分佈圖)
+        const statsBase = [
+            { name: 'APTOS2019', train: 2048, val: 514, test: 1100 },
+            { name: 'MESSIDOR2', train: 972, val: 246, test: 526 },
+            { name: 'Glaucoma Fundus', train: 861, val: 218, test: 465 },
+            { name: 'Retina', train: 336, val: 84, test: 181 },
+            { name: 'IDRiD Data', train: 329, val: 84, test: 103 },
+            { name: 'PAPILA', train: 311, val: 79, test: 98 }
+        ];
+
+        // 數據分佈圖表
+        new Chart(document.getElementById('distributionChart'), {
+            type: 'bar',
+            data: {
+                labels: statsBase.map(s => s.name),
+                datasets: [
+                    { label: 'Training', data: statsBase.map(s => s.train), backgroundColor: '#3b82f6' },
+                    { label: 'Validation', data: statsBase.map(s => s.val), backgroundColor: '#60a5fa' },
+                    { label: 'Test', data: statsBase.map(s => s.test), backgroundColor: '#93c5fd' }
+                ]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { 
+                    legend: { position: 'top' },
+                    tooltip: { mode: 'index', intersect: false }
+                },
+                scales: { 
+                    x: { stacked: true }, 
+                    y: { stacked: true, beginAtZero: true }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
+
+
