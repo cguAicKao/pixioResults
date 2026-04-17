@@ -31,10 +31,9 @@
                 </div>
                 <h1 class="text-3xl md:text-4xl font-extrabold mb-3">深度學習模型訓練表現分析儀表板</h1>
                 <p class="text-slate-300 max-w-2xl leading-relaxed">
-                    本實驗採取兩階段訓練策略：首階段先<span class="text-blue-300 font-bold">冷凍 (Frozen) 前 10 個 Epochs</span>，穩定基礎特徵權重後，再解凍並<span class="text-yellow-400 font-bold">降低 Learning Rate</span> 進入後續 10 個 Epochs 的深度訓練。下方圖表重點比較轉折期 (Epoch 11, 12) 與收斂期 (Epoch 18, 19) 之表現差異。
+                    本實驗採取兩階段訓練策略：首階段先<span class="text-blue-300 font-bold">冷凍 (Frozen) 前 10 個 Epochs</span>，穩定基礎特徵權重後，再解凍並<span class="text-yellow-400 font-bold">降低 Learning Rate</span> 進入後續 10 個 Epochs 的深度訓練。下方圖表加入 <span class="text-rose-400 font-bold">Epoch 0</span> 作為基準值，比較轉折期 (11, 12) 與收斂期 (18, 19) 之表現。
                 </p>
             </div>
-            <!-- 背景裝飾 -->
             <div class="absolute right-0 top-0 -mr-20 -mt-20 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl"></div>
             <div class="absolute left-0 bottom-0 -ml-20 -mb-20 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl"></div>
         </div>
@@ -47,7 +46,7 @@
                         <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
                         性能指標比較 (Epoch Analysis)
                     </h2>
-                    <p class="text-slate-500 text-sm mt-1">數據標籤已顯示於柱狀圖上方 (樣本量：大 → 小排序)</p>
+                    <p class="text-slate-500 text-sm mt-1">EPOCH 0 作為初始基準值，數據標籤顯示於柱狀圖上方</p>
                 </div>
                 <div class="flex bg-slate-100 p-1.5 rounded-xl border border-slate-200">
                     <button onclick="updateChart('accuracy')" id="btn-accuracy" class="px-6 py-2.5 rounded-lg transition-all font-bold text-sm bg-white shadow-md text-blue-600 border-none">ACCURACY</button>
@@ -80,10 +79,10 @@
                     <p class="text-xs text-slate-600 font-medium">Total: 8,555 Samples</p>
                 </div>
                 <div class="group p-4 bg-gradient-to-br from-slate-50 to-white rounded-xl border border-slate-200 hover:shadow-md transition-all">
-                    <p class="text-[10px] text-slate-500 font-black uppercase tracking-widest mb-1">Reliability</p>
-                    <p class="text-xl font-black text-slate-800">Mean ± Std</p>
+                    <p class="text-[10px] text-slate-500 font-black uppercase tracking-widest mb-1">Baseline Comparison</p>
+                    <p class="text-xl font-black text-slate-800">Vs Epoch-0</p>
                     <div class="h-1 w-8 bg-slate-400 my-2 rounded-full"></div>
-                    <p class="text-xs text-slate-600 font-medium">Cross-Validation Analysis</p>
+                    <p class="text-xs text-slate-600 font-medium">Monitoring pre-training state</p>
                 </div>
             </div>
         </div>
@@ -125,21 +124,21 @@
     </div>
 
     <script>
-        // 註冊 DataLabels 插件
         Chart.register(ChartDataLabels);
 
-        // --- 核心數據 ---
         const datasets = ["APTOS2019", "MESSIDOR2", "Glaucoma_fundus", "Retina", "IDRiD_data", "PAPILA"];
-        const epochs = ["epoch-11", "epoch-12", "epoch-18", "epoch-19"];
+        const epochs = ["epoch-0", "epoch-11", "epoch-12", "epoch-18", "epoch-19"];
         
         const rawData = {
             accuracy: {
+                "epoch-0": { mean: [0.8264, 0.7228, 0.7656, 0.5800, 0.4777, 0.7224], std: [0.0065, 0.0094, 0.0105, 0.0150, 0.0957, 0.0517] }, // Retina 為估計值
                 "epoch-11": { mean: [0.8345, 0.6988, 0.7935, 0.5723, 0.4621, 0.7530], std: [0.0067, 0.0062, 0.0157, 0.0138, 0.0483, 0.0133] },
                 "epoch-12": { mean: [0.8336, 0.7026, 0.8012, 0.5867, 0.4582, 0.7551], std: [0.0059, 0.0043, 0.0147, 0.0081, 0.0378, 0.0072] },
                 "epoch-18": { mean: [0.8341, 0.7114, 0.8103, 0.5878, 0.4970, 0.7571], std: [0.0079, 0.0118, 0.0139, 0.0121, 0.0524, 0.0111] },
                 "epoch-19": { mean: [0.8336, 0.7079, 0.7905, 0.5823, 0.4737, 0.7591], std: [0.0048, 0.0076, 0.0086, 0.0168, 0.0332, 0.0211] }
             },
             auroc: {
+                "epoch-0": { mean: [0.9403, 0.8853, 0.9046, 0.7161, 0.7914, 0.7145], std: [0.0022, 0.0055, 0.0035, 0.0128, 0.0265, 0.0360] },
                 "epoch-11": { mean: [0.9393, 0.8697, 0.9141, 0.6918, 0.7905, 0.6939], std: [0.0016, 0.0041, 0.0054, 0.0210, 0.0145, 0.0174] },
                 "epoch-12": { mean: [0.9384, 0.8730, 0.9160, 0.6975, 0.7971, 0.6903], std: [0.0016, 0.0050, 0.0039, 0.0113, 0.0127, 0.0136] },
                 "epoch-18": { mean: [0.9397, 0.8712, 0.9198, 0.6966, 0.7943, 0.7083], std: [0.0023, 0.0047, 0.0047, 0.0049, 0.0083, 0.0154] },
@@ -157,15 +156,15 @@
         ];
 
         const epochColors = [
-            { bg: 'rgba(148, 163, 184, 0.6)', border: '#64748b' }, 
-            { bg: 'rgba(100, 116, 139, 0.6)', border: '#475569' }, 
-            { bg: 'rgba(37, 99, 235, 0.7)', border: '#1d4ed8' },  
-            { bg: 'rgba(79, 70, 229, 0.7)', border: '#4338ca' }   
+            { bg: 'rgba(244, 63, 94, 0.6)', border: '#e11d48' }, // epoch-0 (Rose/Red)
+            { bg: 'rgba(148, 163, 184, 0.5)', border: '#64748b' }, // epoch-11 
+            { bg: 'rgba(100, 116, 139, 0.5)', border: '#475569' }, // epoch-12 
+            { bg: 'rgba(37, 99, 235, 0.7)', border: '#1d4ed8' },  // epoch-18 
+            { bg: 'rgba(79, 70, 229, 0.7)', border: '#4338ca' }   // epoch-19 
         ];
 
         let perfChart = null;
 
-        // 誤差線插件 (手動繪製)
         const errorBarPlugin = {
             id: 'errorBars',
             afterDatasetsDraw: (chart) => {
@@ -176,11 +175,12 @@
                         meta.data.forEach((element, index) => {
                             const mean = dataset.data[index];
                             const std = dataset.errorBars[index];
+                            if (mean === null) return;
                             const yTop = chart.scales.y.getPixelForValue(mean + std);
                             const yBottom = chart.scales.y.getPixelForValue(mean - std);
                             const x = element.x;
                             ctx.save();
-                            ctx.strokeStyle = '#0f172a';
+                            ctx.strokeStyle = '#334155';
                             ctx.lineWidth = 1;
                             ctx.beginPath();
                             ctx.moveTo(x, yTop); ctx.lineTo(x, yBottom);
@@ -198,7 +198,6 @@
             const ctx = document.getElementById('performanceChart').getContext('2d');
             const isAcc = type === 'accuracy';
 
-            // 按鈕樣式
             document.getElementById('btn-accuracy').className = isAcc ? 'px-6 py-2.5 rounded-lg transition-all font-bold text-sm bg-white shadow-md text-blue-600 border-none' : 'px-6 py-2.5 rounded-lg transition-all font-bold text-sm text-slate-500 hover:text-blue-600 border-none';
             document.getElementById('btn-auroc').className = !isAcc ? 'px-6 py-2.5 rounded-lg transition-all font-bold text-sm bg-white shadow-md text-blue-600 border-none' : 'px-6 py-2.5 rounded-lg transition-all font-bold text-sm text-slate-500 hover:text-blue-600 border-none';
 
@@ -211,7 +210,7 @@
                     backgroundColor: epochColors[idx].bg,
                     borderColor: epochColors[idx].border,
                     borderWidth: 1.5,
-                    borderRadius: 4,
+                    borderRadius: 3,
                 }))
             };
 
@@ -222,7 +221,7 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    layout: { padding: { top: 30 } }, // 預留空間給標籤
+                    layout: { padding: { top: 35 } },
                     scales: {
                         y: { 
                             min: isAcc ? 0.35 : 0.6, 
@@ -233,15 +232,15 @@
                         x: { grid: { display: false } }
                     },
                     plugins: { 
-                        legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20, font: { weight: '600' } } },
+                        legend: { position: 'bottom', labels: { usePointStyle: true, padding: 25, font: { weight: '600', size: 11 } } },
                         datalabels: {
                             anchor: 'end',
                             align: 'top',
-                            offset: 4,
-                            formatter: (value) => value.toFixed(2),
-                            font: { size: 10, weight: 'bold' },
-                            color: '#475569',
-                            display: (context) => context.datasetIndex === context.chart.data.datasets.length - 1 || context.datasetIndex === 2 // 僅顯示關鍵 Epoch 或最上層標籤
+                            offset: 5,
+                            formatter: (value) => value ? value.toFixed(2) : '',
+                            font: { size: 9, weight: 'bold' },
+                            color: (context) => context.dataset.borderColor,
+                            display: (context) => context.datasetIndex === 0 || context.datasetIndex === 4 // 顯示 Epoch-0 與 Epoch-19 作為兩端對比
                         },
                         tooltip: {
                             backgroundColor: 'rgba(15, 23, 42, 0.9)',
@@ -281,7 +280,7 @@
                     },
                     plugins: {
                         legend: { position: 'bottom', labels: { boxWidth: 12, font: { weight: '600' } } },
-                        datalabels: { display: false } // 此圖不顯示標籤以免混亂
+                        datalabels: { display: false }
                     }
                 }
             });
