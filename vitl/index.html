@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pixio 實驗結果視覺化 - 完整指標恢復版</title>
+    <title>Pixio 實驗結果視覺化 - 排序更新版</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -13,165 +13,166 @@
         .figure-layout { display: flex; flex-direction: row; gap: 2rem; margin-bottom: 3.5rem; }
         .charts-container { display: flex; flex-direction: column; gap: 4rem; flex-grow: 1; }
         .chart-box { position: relative; height: 450px; padding: 10px; }
-        .dist-chart-box { position: relative; height: 500px; padding: 20px; background: #fafafa; border-radius: 8px; border: 1px solid #eee; }
+        .dist-chart-box { position: relative; height: 350px; padding: 20px; background: #fafafa; border-radius: 8px; border: 1px solid #eee; }
         .custom-legend { flex-shrink: 0; width: 340px; padding-top: 20px; padding-left: 1.5rem; border-left: 1px solid #eee; position: sticky; top: 2rem; height: fit-content; }
-        .legend-section { margin-bottom: 2.5rem; }
         .legend-item { display: flex; flex-direction: column; margin-bottom: 12px; padding: 10px; border-radius: 6px; cursor: pointer; transition: all 0.2s; user-select: none; border: 1px solid transparent; background-color: #fcfcfc; }
         .legend-item:hover { background-color: #f3f4f6; border-color: #e5e7eb; }
         .legend-item.hidden-state { opacity: 0.25; filter: grayscale(1); }
-        .legend-visual-row { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+        .dataset-name { font-size: 0.85rem; font-weight: 800; line-height: 1.2; margin-bottom: 4px; display: block; }
+        .caption { text-align: center; font-size: 1.05rem; font-weight: bold; margin-top: 18px; color: #000; }
+        .academic-table { width: 100%; border-collapse: collapse; font-size: 0.75rem; border-top: 2.8px solid black; border-bottom: 2.8px solid black; }
+        .academic-table th { padding: 8px 2px; border-bottom: 1.2px solid black; text-transform: uppercase; font-weight: bold; }
+        .academic-table td { padding: 6px 2px; text-align: center; }
+        .dataset-cell { text-align: left !important; font-weight: bold; padding-left: 8px !important; border-right: 1px solid #ddd; width: 160px; }
+        .freeze-row { background-color: #fffafb; font-style: italic; }
+        .freeze-text { color: #b91c1c; font-weight: bold; }
         .line-solid { width: 25px; height: 4px; border-radius: 2px; }
         .line-dashed { width: 25px; height: 0px; border-top: 2px dashed; }
         .line-dotted { width: 25px; height: 0px; border-top: 3px dotted; }
-        .dataset-name { font-size: 0.85rem; font-weight: 800; line-height: 1.2; margin-bottom: 4px; display: block; }
-        .model-tag { font-size: 0.65rem; color: #444; font-family: 'Inter', sans-serif; display: flex; align-items: center; gap: 4px; white-space: nowrap; }
-        .tag-prefix { font-weight: bold; color: #888; width: 65px; flex-shrink: 0; }
-        .caption { text-align: center; font-size: 1.05rem; font-weight: bold; margin-top: 18px; color: #000; }
-        .academic-table { width: 100%; border-collapse: collapse; font-size: 0.6rem; border-top: 2.8px solid black; border-bottom: 2.8px solid black; }
-        .academic-table th { padding: 8px 2px; border-bottom: 1.2px solid black; text-transform: uppercase; font-weight: bold; }
-        .academic-table td { padding: 6px 2px; text-align: center; }
-        .dataset-cell { text-align: left !important; font-weight: bold; padding-left: 8px !important; border-right: 1px solid #ddd; width: 140px; }
-        .freeze-cell { background-color: #fffafb; font-style: italic; color: #b91c1c; }
     </style>
 </head>
 <body>
     <div class="paper-container">
         <div class="mb-10 border-b-2 border-black pb-4">
-            <h1 class="text-2xl font-bold uppercase tracking-wide">模型收斂性與凍結編碼器評估 (恢復版)</h1>
+            <h1 class="text-2xl font-bold uppercase tracking-wide">模型收斂性與數據分佈評估 (依樣本量排序)</h1>
+            <p class="text-sm text-gray-600 mt-1">更新內容：同步最新 E210 數據，並將圖表與表格依數據集規模由大至小排列</p>
         </div>
 
         <div class="figure-layout">
             <div class="charts-container">
+                <!-- 圖 1(a) Accuracy -->
                 <div class="flex flex-col border-b border-gray-100 pb-8">
                     <div class="chart-box"><canvas id="accuracyChart"></canvas></div>
                     <p class="caption">圖 1. (a) 平均準確度趨勢 (Mean Accuracy)</p>
                 </div>
-                <div class="flex flex-col">
+                <!-- 圖 1(b) AUROC -->
+                <div class="flex flex-col border-b border-gray-100 pb-8">
                     <div class="chart-box"><canvas id="aurocChart"></canvas></div>
                     <p class="caption">圖 1. (b) 平均 AUROC 趨勢 (更新至 Epoch 210)</p>
+                </div>
+                <!-- 圖 2 分佈統計 (已排序) -->
+                <div class="flex flex-col pt-4">
+                    <div class="dist-chart-box"><canvas id="distChart"></canvas></div>
+                    <p class="caption">圖 2. 數據集樣本規模分佈統計 (依樣本數由大到小排序)</p>
                 </div>
             </div>
 
             <div class="custom-legend">
-                <div class="legend-section">
-                    <p class="text-[10px] font-black mb-3 tracking-[0.2em] text-red-600 uppercase border-b border-red-100 pb-1">數據集切換 (Sync Toggles)</p>
+                <div class="legend-section mb-6">
+                    <p class="text-[10px] font-black mb-3 tracking-[0.2em] text-red-600 uppercase border-b border-red-100 pb-1">數據集管理 (依規模排序)</p>
                     <div id="unifiedLegendContainer"></div>
                 </div>
                 <div class="p-4 bg-gray-50 rounded text-[10px] text-gray-500">
-                    <p class="font-bold mb-2">線條說明 (Line Styles):</p>
-                    <div class="flex items-center gap-2 mb-1"><div class="line-solid bg-gray-400"></div> <span>Main (Full-Tune)</span></div>
-                    <div class="flex items-center gap-2 mb-1"><div class="line-dashed border-gray-400"></div> <span>Goal (Baseline)</span></div>
-                    <div class="flex items-center gap-2"><div class="line-dotted border-gray-400"></div> <span>Freeze-enc10 (New)</span></div>
+                    <p class="font-bold mb-2">圖例說明 (Line Styles):</p>
+                    <div class="flex items-center gap-2 mb-2">
+                        <div class="line-solid bg-gray-600"></div> 
+                        <span>Base</span>
+                    </div>
+                    <div class="flex items-center gap-2 mb-2">
+                        <div class="line-dashed border-gray-400"></div> 
+                        <span>Goal</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="line-dotted border-gray-600"></div> 
+                        <span>Frozen Encoder 10 Epochs</span>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- 表格區域 1: Accuracy -->
         <div class="mt-10">
-            <p class="text-sm font-bold mb-4 italic">表 1. 各數據集準確度 (Accuracy) 數值匯總 (含恢復數據)。</p>
+            <p class="text-sm font-bold mb-4 italic">表 1. 各數據集 Accuracy 數值匯總 (依規模排序)。</p>
             <div class="overflow-x-auto">
                 <table class="academic-table">
-                    <thead><tr id="accHeader"><th class="dataset-cell">Dataset / Model</th></tr></thead>
+                    <thead><tr id="accHeader"><th class="dataset-cell">Dataset / Epoch</th></tr></thead>
                     <tbody id="tableAccBody"></tbody>
                 </table>
             </div>
         </div>
 
-        <!-- 表格區域 2: AUROC -->
         <div class="mt-16">
-            <p class="text-sm font-bold mb-4 italic">表 2. 各數據集 AUROC 數值匯總 (最新更新)。</p>
+            <p class="text-sm font-bold mb-4 italic">表 2. 各數據集 AUROC 數值匯總 (依規模排序)。</p>
             <div class="overflow-x-auto">
                 <table class="academic-table">
-                    <thead><tr id="aurocHeader"><th class="dataset-cell">Dataset / Model</th></tr></thead>
+                    <thead><tr id="aurocHeader"><th class="dataset-cell">Dataset / Epoch</th></tr></thead>
                     <tbody id="tableAurocBody"></tbody>
                 </table>
             </div>
         </div>
-
-        <div class="mt-24 pt-10 border-t-2 border-gray-200">
-            <div class="dist-chart-box"><canvas id="distributionChart"></canvas></div>
-            <p class="caption">圖 2. 數據集樣本分佈統計</p>
-        </div>
     </div>
 
     <script>
-        // 統一橫軸標籤
-        const epochLabels = [0, 10, 20, 30, 40, 60, 80, 100, 120, 140, 160, 180, 200, 210, 220, 240, 260, 280, 300];
+        const epochLabels = [0, 10, 20, 30, 40, 60, 80, 100, 120, 140, 160, 180, 200, 210];
 
-        // 將原本的 Main 數據 (18點或多點) 對齊到目前的 epochLabels
         function alignMainData(orig) {
             const aligned = Array(epochLabels.length).fill(null);
-            // 假設 Main 原始對應 [0, 20, 40, 60, 80, 100, 120, 140, 160, 180, 200, 220, 240, 260, 280, 300]
-            aligned[0] = orig[0]; // E0
-            aligned[2] = orig[1]; // E20
-            aligned[4] = orig[2]; // E40
-            for(let i=3; i<orig.length; i++) {
+            aligned[0] = orig[0]; 
+            aligned[2] = orig[1]; 
+            aligned[4] = orig[2]; 
+            for(let i=3; i<orig.length && (i+2) < epochLabels.length; i++) {
                 aligned[i+2] = orig[i];
             }
             return aligned;
         }
 
-        // 將 Freeze Map 數據轉換為 Array
         function getFreezeArray(map) {
             return epochLabels.map(e => map[e] !== undefined ? map[e] : null);
         }
 
-        const rawData = [
+        // 原始數據
+        const dataInput = [
             {
                 id: 'aptos', ds: 'APTOS2019', color: '#e41a1c', totalSize: 3662,
-                accBaseModel: '[RETFound Dinov2 meh]', aurocBaseModel: '[Dinov2]',
                 accBaseline: 0.8524, aurocBaseline: 0.9519,
-                accMain: alignMainData([0.8263, 0.7309, 0.7494, 0.7640, 0.7736, 0.7796, 0.7814, 0.7861, 0.7947, 0.7914, 0.7930, 0.7941, 0.8009, 0.7978, 0.8040, 0.8025, 0.7998, 0.7996]),
-                aurocMain: alignMainData([0.9403, 0.8655, 0.8914, 0.8999, 0.9029, 0.9037, 0.9085, 0.9136, 0.9180, 0.9181, 0.9204, 0.9229, 0.9248, 0.9239, 0.9257, 0.9254, 0.9250, 0.9239]),
-                accFreeze: {10: 0.8302, 20: 0.8356, 30: 0.8296, 60: 0.8296, 80: 0.8355, 140: 0.8338, 160: 0.8367, 180: 0.8313},
+                accMain: alignMainData([0.8263, 0.7309, 0.7494, 0.7640, 0.7736, 0.7796, 0.7814, 0.7861, 0.7947, 0.7914, 0.7930, 0.7941]),
+                aurocMain: alignMainData([0.9403, 0.8655, 0.8914, 0.8999, 0.9029, 0.9037, 0.9085, 0.9136, 0.9180, 0.9181, 0.9204, 0.9229]),
+                accFreeze: {10: 0.8301, 20: 0.8356, 30: 0.8296, 60: 0.8296, 80: 0.8354, 140: 0.8338, 160: 0.8367, 180: 0.8312, 200: 0.8309, 210: 0.8358},
                 aurocFreeze: {10: 0.9393, 20: 0.9392, 30: 0.9368, 60: 0.9399, 80: 0.9434, 140: 0.9430, 160: 0.9421, 180: 0.9419, 200: 0.9416, 210: 0.9410}
             },
             {
                 id: 'messidor', ds: 'MESSIDOR2', color: '#ff7f00', totalSize: 1744,
-                accBaseModel: '[RETFound Dinov2 meh]', aurocBaseModel: '[Dinov3]',
                 accBaseline: 0.7707, aurocBaseline: 0.9089,
-                accMain: alignMainData([0.7228, 0.5775, 0.6003, 0.5996, 0.6053, 0.6045, 0.6136, 0.6129, 0.6193, 0.6186, 0.6186, 0.6247, 0.6315, 0.6346, 0.6235, 0.6285, 0.6247, 0.6296]),
-                aurocMain: alignMainData([0.8852, 0.7062, 0.7568, 0.7757, 0.7831, 0.7706, 0.8030, 0.8054, 0.8106, 0.8046, 0.8042, 0.8196, 0.8198, 0.8283, 0.8072, 0.8230, 0.8249, 0.8216]),
-                accFreeze: {10: 0.6875, 20: 0.7114, 30: 0.7004, 60: 0.7114, 80: 0.7057, 140: 0.6977, 160: 0.6939, 180: 0.7137},
+                accMain: alignMainData([0.7228, 0.5775, 0.6003, 0.5996, 0.6053, 0.6045, 0.6136, 0.6129, 0.6193, 0.6186, 0.6186, 0.6247]),
+                aurocMain: alignMainData([0.8852, 0.7062, 0.7568, 0.7757, 0.7831, 0.7706, 0.8030, 0.8054, 0.8106, 0.8046, 0.8042, 0.8196]),
+                accFreeze: {10: 0.6874, 20: 0.7114, 30: 0.7003, 60: 0.7114, 80: 0.7057, 140: 0.6977, 160: 0.6939, 180: 0.7136, 200: 0.7064, 210: 0.7087},
                 aurocFreeze: {10: 0.8737, 20: 0.8826, 30: 0.8799, 60: 0.8732, 80: 0.8784, 140: 0.8739, 160: 0.8744, 180: 0.8867, 200: 0.8796, 210: 0.8809}
             },
             {
-                id: 'glaucoma', ds: 'Glaucoma_fundus', color: '#377eb8', totalSize: 1544,
-                accBaseModel: '[RETFound Dinov2 shanghai]', aurocBaseModel: '[RETFound Dinov2 shanghai]',
+                id: 'glaucoma', ds: 'Glaucoma', color: '#377eb8', totalSize: 1544,
                 accBaseline: 0.8692, aurocBaseline: 0.9552,
-                accMain: alignMainData([0.7655, 0.7668, 0.7918, 0.8025, 0.8051, 0.8034, 0.8094, 0.8103, 0.8215, 0.8279, 0.8369, 0.8301, 0.8378, 0.8378, 0.8408, 0.8430, 0.8412, 0.8438]),
-                aurocMain: alignMainData([0.9045, 0.8957, 0.9114, 0.9156, 0.9204, 0.9207, 0.9243, 0.9273, 0.9326, 0.9362, 0.9401, 0.9369, 0.9424, 0.9402, 0.9415, 0.9437, 0.9431, 0.9437]),
-                accFreeze: {10: 0.8353, 20: 0.8275, 30: 0.8318, 60: 0.8284, 80: 0.8422, 140: 0.8422, 160: 0.8477, 180: 0.8551},
+                accMain: alignMainData([0.7655, 0.7668, 0.7918, 0.8025, 0.8051, 0.8034, 0.8094, 0.8103, 0.8215, 0.8279, 0.8369, 0.8301]),
+                aurocMain: alignMainData([0.9045, 0.8957, 0.9114, 0.9156, 0.9204, 0.9207, 0.9243, 0.9273, 0.9326, 0.9362, 0.9401, 0.9369]),
+                accFreeze: {10: 0.8352, 20: 0.8275, 30: 0.8318, 60: 0.8283, 80: 0.8421, 140: 0.8421, 160: 0.8477, 180: 0.8550, 200: 0.8589, 210: 0.8537},
                 aurocFreeze: {10: 0.9468, 20: 0.9380, 30: 0.9417, 60: 0.9389, 80: 0.9469, 140: 0.9464, 160: 0.9474, 180: 0.9533, 200: 0.9542, 210: 0.9538}
             },
             {
-                id: 'idrid', ds: 'IDRiD_data', color: '#4daf4a', totalSize: 516,
-                accBaseModel: '[RETFound Dinov2 meh]', aurocBaseModel: '[RETFound Dinov2 meh]',
+                id: 'idrid', ds: 'IDRiD', color: '#4daf4a', totalSize: 516,
                 accBaseline: 0.6563, aurocBaseline: 0.8541,
-                accMain: alignMainData([0.4776, 0.3533, 0.3669, 0.3572, 0.3300, 0.3398, 0.3592, 0.3378, 0.3747, 0.3902, 0.4174, 0.4310, 0.4019, 0.4077, 0.3883, 0.4174, 0.4330, 0.4563]),
-                aurocMain: alignMainData([0.7914, 0.6150, 0.6191, 0.6180, 0.6437, 0.6439, 0.6561, 0.6556, 0.6740, 0.6828, 0.6804, 0.6978, 0.6836, 0.6818, 0.6917, 0.7122, 0.7070, 0.7170]),
-                accFreeze: {10: 0.5068, 20: 0.5204, 30: 0.4816, 60: 0.5398, 80: 0.5301, 140: 0.5146, 160: 0.5204, 180: 0.5495},
+                accMain: alignMainData([0.4776, 0.3533, 0.3669, 0.3572, 0.3300, 0.3398, 0.3592, 0.3378, 0.3747, 0.3902, 0.4174, 0.4310]),
+                aurocMain: alignMainData([0.7914, 0.6150, 0.6191, 0.6180, 0.6437, 0.6439, 0.6561, 0.6556, 0.6740, 0.6828, 0.6804, 0.6978]),
+                accFreeze: {10: 0.5067, 20: 0.5203, 30: 0.4815, 60: 0.5398, 80: 0.5300, 140: 0.5145, 160: 0.5203, 180: 0.5495, 200: 0.5417, 210: 0.5514},
                 aurocFreeze: {10: 0.7678, 20: 0.7677, 30: 0.7562, 60: 0.7750, 80: 0.7894, 140: 0.7906, 160: 0.7815, 180: 0.7981, 200: 0.7915, 210: 0.8021}
             },
             {
                 id: 'papila', ds: 'PAPILA', color: '#984ea3', totalSize: 488,
-                accBaseModel: '[RETFound Dinov2 meh]', aurocBaseModel: '[RETFound Dinov2 meh]',
                 accBaseline: 0.8408, aurocBaseline: 0.8797,
-                accMain: alignMainData([0.7224, 0.6836, 0.7489, 0.7551, 0.7653, 0.7530, 0.7591, 0.7367, 0.7469, 0.7653, 0.7510, 0.7612, 0.7693, 0.7571, 0.7653, 0.7469, 0.7693, 0.7714]),
-                aurocMain: alignMainData([0.7144, 0.6798, 0.7646, 0.7791, 0.7734, 0.7887, 0.7899, 0.7981, 0.7877, 0.7858, 0.7882, 0.8133, 0.8118, 0.8054, 0.8127, 0.8050, 0.8019, 0.7954]),
-                accFreeze: {10: 0.7694, 20: 0.7531, 30: 0.7735, 60: 0.7531, 80: 0.7612, 140: 0.7776, 160: 0.7673, 180: 0.7714},
+                accMain: alignMainData([0.7224, 0.6836, 0.7489, 0.7551, 0.7653, 0.7530, 0.7591, 0.7367, 0.7469, 0.7653, 0.7510, 0.7612]),
+                aurocMain: alignMainData([0.7144, 0.6798, 0.7646, 0.7791, 0.7734, 0.7887, 0.7899, 0.7981, 0.7877, 0.7858, 0.7882, 0.8133]),
+                accFreeze: {10: 0.7693, 20: 0.7530, 30: 0.7734, 60: 0.7530, 80: 0.7612, 140: 0.7775, 160: 0.7673, 180: 0.7714, 200: 0.7714, 210: 0.7755},
                 aurocFreeze: {10: 0.7743, 20: 0.7827, 30: 0.7896, 60: 0.8163, 80: 0.8035, 140: 0.8120, 160: 0.8259, 180: 0.8192, 200: 0.8049, 210: 0.8096}
             },
             {
                 id: 'retina', ds: 'Retina', color: '#a65628', totalSize: 601,
-                accBaseModel: '[RETFound Dinov2 meh]', aurocBaseModel: '[Dinov3]',
                 accBaseline: 0.7304, aurocBaseline: 0.9015,
-                accMain: alignMainData([0.5966, 0.5524, 0.5613, 0.5414, 0.5447, 0.5679, 0.5679, 0.5734, 0.5745, 0.5867, 0.5900, 0.5911, 0.6088, 0.6011, 0.6066, 0.6044, 0.6055, 0.6022]),
-                aurocMain: alignMainData([0.7160, 0.7457, 0.7579, 0.7446, 0.7423, 0.7568, 0.7532, 0.7754, 0.7965, 0.8046, 0.8022, 0.8045, 0.8085, 0.8134, 0.8152, 0.8196, 0.8114, 0.8120]),
-                accFreeze: {10: 0.6210, 20: 0.6099, 30: 0.5978, 60: 0.6155, 80: 0.6630, 140: 0.6254, 160: 0.6298, 180: 0.6630},
+                accMain: alignMainData([0.5966, 0.5524, 0.5613, 0.5414, 0.5447, 0.5679, 0.5679, 0.5734, 0.5745, 0.5867, 0.5900, 0.5911]),
+                aurocMain: alignMainData([0.7160, 0.7457, 0.7579, 0.7446, 0.7423, 0.7568, 0.7532, 0.7754, 0.7965, 0.8046, 0.8022, 0.8045]),
+                accFreeze: {10: 0.6209, 20: 0.6099, 30: 0.5977, 60: 0.6154, 80: 0.6629, 140: 0.6254, 160: 0.6298, 180: 0.6629, 200: 0.6651, 210: 0.6508},
                 aurocFreeze: {10: 0.7910, 20: 0.8142, 30: 0.7555, 60: 0.8268, 80: 0.8586, 140: 0.8332, 160: 0.8528, 180: 0.8623, 200: 0.8731, 210: 0.8577}
             }
         ];
+
+        // 核心邏輯：執行排序 (由大到小)
+        const rawData = [...dataInput].sort((a, b) => b.totalSize - a.totalSize);
 
         let charts = {};
         const markers = ['circle', 'rect', 'triangle', 'rectRot', 'star', 'crossRot'];
@@ -183,13 +184,14 @@
             const tAcc = document.getElementById('tableAccBody');
             const tAuroc = document.getElementById('tableAurocBody');
 
+            // 表頭初始化
             epochLabels.forEach(e => {
                 const thA = document.createElement('th'); thA.textContent = `E${e}`; accH.appendChild(thA);
                 const thB = document.createElement('th'); thB.textContent = `E${e}`; aurocH.appendChild(thB);
             });
 
+            // 圖例與表格數據渲染 (按排序後的順序)
             rawData.forEach((d, i) => {
-                // Legend
                 const item = document.createElement('div');
                 item.className = 'legend-item';
                 item.onclick = () => {
@@ -203,18 +205,22 @@
                     });
                 };
                 item.innerHTML = `
-                    <div class="flex justify-between items-center"><span class="dataset-name">${d.ds}</span><span class="text-[9px] text-gray-400">#${d.totalSize}</span></div>
-                    <div class="flex items-center gap-2 mt-1"><div class="w-3 h-3 rounded-full" style="background-color:${d.color}"></div><span class="text-[9px] text-gray-500">Toggle Dataset</span></div>
+                    <div class="flex justify-between items-center"><span class="dataset-name">${d.ds}</span><span class="text-[9px] text-gray-400">N=${d.totalSize}</span></div>
+                    <div class="flex items-center gap-2 mt-1"><div class="w-3 h-3 rounded-full" style="background-color:${d.color}"></div><span class="text-[9px] text-gray-500">切換數據顯示</span></div>
                 `;
                 unifiedLegend.appendChild(item);
 
-                // Accuracy Table Row
-                tAcc.innerHTML += `<tr><td class="dataset-cell">${d.ds} (Main)</td>${d.accMain.map(v=>`<td>${v?v.toFixed(3):'-'}</td>`).join('')}</tr>`;
-                tAcc.innerHTML += `<tr class="freeze-cell"><td class="dataset-cell font-bold text-red-600">${d.ds} (Freeze)</td>${getFreezeArray(d.accFreeze).map(v=>`<td>${v?v.toFixed(3):''}</td>`).join('')}</tr>`;
+                // Accuracy 表格
+                tAcc.innerHTML += `
+                    <tr><td class="dataset-cell">${d.ds} (Base)</td>${d.accMain.map(v=>`<td>${v?v.toFixed(3):'-'}</td>`).join('')}</tr>
+                    <tr class="freeze-row"><td class="dataset-cell freeze-text">${d.ds} (Frozen)</td>${getFreezeArray(d.accFreeze).map(v=>`<td class="freeze-text">${v?v.toFixed(3):''}</td>`).join('')}</tr>
+                `;
 
-                // AUROC Table Row
-                tAuroc.innerHTML += `<tr><td class="dataset-cell">${d.ds} (Main)</td>${d.aurocMain.map(v=>`<td>${v?v.toFixed(4):'-'}</td>`).join('')}</tr>`;
-                tAuroc.innerHTML += `<tr class="freeze-cell"><td class="dataset-cell font-bold text-red-600">${d.ds} (Freeze)</td>${getFreezeArray(d.aurocFreeze).map(v=>`<td>${v?v.toFixed(4):''}</td>`).join('')}</tr>`;
+                // AUROC 表格
+                tAuroc.innerHTML += `
+                    <tr><td class="dataset-cell">${d.ds} (Base)</td>${d.aurocMain.map(v=>`<td>${v?v.toFixed(4):'-'}</td>`).join('')}</tr>
+                    <tr class="freeze-row"><td class="dataset-cell freeze-text">${d.ds} (Frozen)</td>${getFreezeArray(d.aurocFreeze).map(v=>`<td class="freeze-text">${v?v.toFixed(4):''}</td>`).join('')}</tr>
+                `;
             });
         }
 
@@ -228,15 +234,15 @@
 
                 datasets.push({
                     label: `${d.ds}_main`, data: main, borderColor: d.color, backgroundColor: d.color,
-                    borderWidth: 1.5, pointStyle: markers[i], pointRadius: 3, tension: 0.1, spanGaps: true
+                    borderWidth: 2, pointStyle: markers[i % markers.length], pointRadius: 4, tension: 0.1, spanGaps: true
                 });
                 datasets.push({
                     label: `${d.ds}_base`, data: Array(epochLabels.length).fill(baseline), borderColor: d.color,
-                    borderWidth: 1, borderDash: [5, 5], pointRadius: 0
+                    borderWidth: 1, borderDash: [6, 4], pointRadius: 0
                 });
                 datasets.push({
                     label: `${d.ds}_freeze`, data: freeze, borderColor: d.color,
-                    borderWidth: 3, borderDash: [2, 2], pointStyle: 'crossRot', pointRadius: 7, showLine: true, spanGaps: true
+                    borderWidth: 3, borderDash: [2, 2], pointStyle: 'crossRot', pointRadius: 6, showLine: true, spanGaps: true
                 });
             });
 
@@ -247,8 +253,39 @@
                     responsive: true, maintainAspectRatio: false,
                     plugins: { legend: { display: false } },
                     scales: {
-                        x: { grid: { display: false }, border: { width: 2, color: '#000' } },
-                        y: { min: yMin, max: yMax, grid: { color: '#f3f3f3' }, border: { width: 2, color: '#000' }, ticks: { callback: v=>v.toFixed(2)} }
+                        x: { grid: { display: false }, border: { width: 2, color: '#000' }, title: { display: true, text: 'Training Epochs', font: { weight: 'bold' } } },
+                        y: { min: yMin, max: yMax, grid: { color: '#f0f0f0' }, border: { width: 2, color: '#000' }, ticks: { callback: v=>v.toFixed(2)} }
+                    }
+                }
+            });
+        }
+
+        function createDistChart() {
+            const ctx = document.getElementById('distChart').getContext('2d');
+            return new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: rawData.map(d => d.ds),
+                    datasets: [{
+                        label: '樣本總數 (Total Samples)',
+                        data: rawData.map(d => d.totalSize),
+                        backgroundColor: rawData.map(d => d.color + 'CC'), // 80% 透明度
+                        borderColor: rawData.map(d => d.color),
+                        borderWidth: 1.2,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    indexAxis: 'y', // 橫向排列
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { 
+                        legend: { display: false },
+                        tooltip: { callbacks: { label: (c) => ` ${c.raw.toLocaleString()} images` } }
+                    },
+                    scales: {
+                        x: { grid: { color: '#eee' }, title: { display: true, text: 'Number of Images', font: { size: 10 } } },
+                        y: { grid: { display: false }, ticks: { font: { weight: 'bold' } } }
                     }
                 }
             });
@@ -258,20 +295,7 @@
             initUI();
             charts.acc = createChart('accuracyChart', 'acc', 0.3, 1.0);
             charts.auroc = createChart('aurocChart', 'auroc', 0.6, 1.0);
-
-            // Distribution
-            new Chart(document.getElementById('distributionChart'), {
-                type: 'bar',
-                data: {
-                    labels: ['APTOS2019', 'MESSIDOR2', 'Glaucoma Fundus', 'Retina', 'IDRiD Data', 'PAPILA'],
-                    datasets: [
-                        { label: 'Training', data: [2048, 972, 861, 336, 329, 311], backgroundColor: '#3b82f6' },
-                        { label: 'Validation', data: [514, 246, 218, 84, 84, 79], backgroundColor: '#60a5fa' },
-                        { label: 'Test', data: [1100, 526, 465, 181, 103, 98], backgroundColor: '#93c5fd' }
-                    ]
-                },
-                options: { responsive: true, maintainAspectRatio: false, scales: { x:{stacked:true}, y:{stacked:true} } }
-            });
+            charts.dist = createDistChart();
         };
     </script>
 </body>
