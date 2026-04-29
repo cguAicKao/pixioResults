@@ -183,7 +183,7 @@
     <header class="header">
         <div class="header-title">
             <h1>眼底影像 AI 模型訓練成效報告</h1>
-            <p>分析版本：v2.5 | 最終 Epoch: 80 | 數據視覺化</p>
+            <p>分析版本：v2.6 | 依據樣本規模 (N) 排序 | 最終 Epoch: 80</p>
         </div>
         <div class="toggle-group">
             <button id="btn-auroc" class="active" onclick="updateView('auroc')">AUROC</button>
@@ -194,16 +194,16 @@
     <!-- 摘要指標 -->
     <div class="summary-grid">
         <div class="stat-card highlight">
-            <h3>核心觀察</h3>
-            <p>樣本量最少的 <b>IDRiD</b> 資料集表現出最強的遷移學習增益，驗證了 ImageNet 特徵在小樣本任務中的關鍵角色。</p>
+            <h3>規模效應</h3>
+            <p>資料集已由大至小排列。<b>APTOS (N=3,662)</b> 作為最大資料集，展現了最強的基準表現穩定性。</p>
         </div>
         <div class="stat-card">
-            <h3>樣本分佈</h3>
-            <p>資料集規模差異極大（從 413 到 3,662 筆），大數據集如 <b>APTOS</b> 表現相對穩定，小數據集則對預訓練敏感度較高。</p>
+            <h3>小樣本優勢</h3>
+            <p>排序末端的 <b>IDRiD (N=413)</b> 雖然樣本最少，但在遷移學習介入後表現出顯著的增長曲線。</p>
         </div>
         <div class="stat-card">
             <h3>結論建議</h3>
-            <p>針對小樣本醫療影像，應優先選擇遷移學習方案以確保基本的特徵檢測能力，並輔以數據增強技術。</p>
+            <p>當樣本規模低於 1,000 筆時，ImageNet 預訓練幾乎是提升模型泛化能力的必要手段。</p>
         </div>
     </div>
 
@@ -232,7 +232,7 @@
         <!-- 樣本數圖表 -->
         <div class="panel">
             <div class="panel-header">
-                <h2>各資料集樣本規模 (N)</h2>
+                <h2>樣本規模排序 (N)</h2>
             </div>
             <div class="chart-container sample-chart-h">
                 <canvas id="sampleChart"></canvas>
@@ -245,7 +245,7 @@
         <table>
             <thead>
                 <tr>
-                    <th>資料集</th>
+                    <th>資料集 (依規模降序)</th>
                     <th style="text-align: center;">樣本數</th>
                     <th style="text-align: center;">早期差異 (E20)</th>
                     <th style="text-align: center;">最終模型表現 (E80)</th>
@@ -264,22 +264,22 @@
         <div class="insight-grid">
             <div>
                 <div class="insight-item">
-                    <h4><div class="bullet"></div>小樣本與遷移學習</h4>
-                    <p><b>IDRiD (413 樣本)</b>：加入 ImageNet 權重後進步最顯著。這說明了當本域數據量極小時，借用自然影像的大規模特徵能大幅降低過擬合風險。</p>
+                    <h4><div class="bullet"></div>大樣本區塊 (N > 1,500)</h4>
+                    <p>APTOS 與 MESSIDOR2 展現了穩健的基礎。在大樣本下，遷移學習主要扮演「加速收斂」的角色，對最終準確度的邊際貢獻較穩定。</p>
                 </div>
                 <div class="insight-item">
-                    <h4><div class="bullet"></div>大樣本的穩定性</h4>
-                    <p><b>APTOS2019 (3,662 樣本)</b>：無論是否加入預訓練，表現均維持在 0.94 以上的高水位，代表該數據規模已足夠模型學習到穩健的特徵。</p>
+                    <h4><div class="bullet"></div>中樣本區塊 (1,000 < N < 1,500)</h4>
+                    <p>Retina 與 Glaucoma 數據量中等，此處的模型表現容易受到特定標註偏差影響，遷移學習的表現開始出現波動。</p>
                 </div>
             </div>
             <div>
                 <div class="insight-item">
-                    <h4><div class="bullet"></div>Retina 資料集的特例</h4>
-                    <p>儘管 Retina 擁有 1,200 筆樣本，但在 E80 時混合模型表現略遜於純眼底模型，需探討其標註一致性或 ImageNet 權重在特定眼底特徵上的負面遷移現象。</p>
+                    <h4><div class="bullet"></div>小樣本區塊 (N < 500)</h4>
+                    <p>IDRiD 與 PAPILA 樣本數極其有限。此處我們觀察到遷移學習介入後有顯著的性能跳躍，證明了跨域特徵在數據貧乏時的補充價值。</p>
                 </div>
                 <div class="insight-item">
-                    <h4><div class="bullet"></div>部署策略</h4>
-                    <p>建議將「遷移學習」列為開發標準流程，特別是在標註資源有限的臨床研究初期，能快速達到可接受的診斷門檻。</p>
+                    <h4><div class="bullet"></div>未來的資料蒐集策略</h4>
+                    <p>若要進一步提升 IDRiD 的表現，除了增加樣本外，應考慮引入針對醫學影像微調的 SSL (Self-Supervised Learning) 預訓練權重。</p>
                 </div>
             </div>
         </div>
@@ -287,17 +287,18 @@
 </div>
 
 <script>
-    const DATASETS = ["APTOS2019", "MESSIDOR2", "Glaucoma_fundus", "Retina", "IDRiD_data", "PAPILA"];
-    
-    // 樣本數量數據
-    const SAMPLE_COUNTS = {
+    // 原始數據
+    const RAW_SAMPLE_COUNTS = {
         "APTOS2019": 3662,
         "MESSIDOR2": 1748,
         "Glaucoma_fundus": 1540,
         "Retina": 1200,
-        "IDRiD_data": 413,
-        "PAPILA": 488
+        "PAPILA": 488,
+        "IDRiD_data": 413
     };
+
+    // 根據樣本數由大到小排序 DATASETS 陣列
+    const DATASETS = Object.keys(RAW_SAMPLE_COUNTS).sort((a, b) => RAW_SAMPLE_COUNTS[b] - RAW_SAMPLE_COUNTS[a]);
 
     const RAW_DATA = {
         auroc: {
@@ -420,7 +421,7 @@
     function renderSampleChart() {
         const ctx = document.getElementById('sampleChart').getContext('2d');
         const labels = DATASETS.map(d => d.replace('_data', ''));
-        const sampleValues = DATASETS.map(d => SAMPLE_COUNTS[d]);
+        const sampleValues = DATASETS.map(d => RAW_SAMPLE_COUNTS[d]);
 
         if (chartSample) chartSample.destroy();
 
@@ -436,7 +437,7 @@
                 }]
             },
             options: {
-                indexAxis: 'y', // 變為橫向長條圖
+                indexAxis: 'y',
                 responsive: true,
                 maintainAspectRatio: false,
                 layout: { padding: { right: 40 } },
@@ -462,7 +463,7 @@
     function renderTable(metric, data) {
         const tbody = document.getElementById('table-body');
         tbody.innerHTML = DATASETS.map(d => {
-            const n = SAMPLE_COUNTS[d];
+            const n = RAW_SAMPLE_COUNTS[d];
             const fo = data.fundusOnly[d];
             const fi = data.fundusImgNet[d];
             const e20 = data.e20_diff[d];
