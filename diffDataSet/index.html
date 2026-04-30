@@ -183,7 +183,7 @@
     <header class="header">
         <div class="header-title">
             <h1>眼底影像 AI 模型訓練成效報告</h1>
-            <p>分析版本：v2.6 | 依據樣本規模 (N) 排序 | 最終 Epoch: 80</p>
+            <p>分析版本：v2.7 | 更新樣本數量並依規模 (N) 排序 | 最終 Epoch: 80</p>
         </div>
         <div class="toggle-group">
             <button id="btn-auroc" class="active" onclick="updateView('auroc')">AUROC</button>
@@ -194,16 +194,16 @@
     <!-- 摘要指標 -->
     <div class="summary-grid">
         <div class="stat-card highlight">
-            <h3>規模效應</h3>
-            <p>資料集已由大至小排列。<b>APTOS (N=3,662)</b> 作為最大資料集，展現了最強的基準表現穩定性。</p>
+            <h3>資料量分級</h3>
+            <p>資料集依據最新樣本量重新排序。<b>APTOS (N=3,662)</b> 穩居榜首，<b>MESSIDOR2</b> 與 <b>Glaucoma</b> 緊隨其後。</p>
         </div>
         <div class="stat-card">
-            <h3>小樣本優勢</h3>
-            <p>排序末端的 <b>IDRiD (N=413)</b> 雖然樣本最少，但在遷移學習介入後表現出顯著的增長曲線。</p>
+            <h3>小型資料集關注</h3>
+            <p><b>IDRiD Data (516)</b> 與 <b>PAPILA (488)</b> 樣本最精簡，此類資料集在模型訓練中更依賴強大的特徵提取基準。</p>
         </div>
         <div class="stat-card">
-            <h3>結論建議</h3>
-            <p>當樣本規模低於 1,000 筆時，ImageNet 預訓練幾乎是提升模型泛化能力的必要手段。</p>
+            <h3>趨勢分析</h3>
+            <p>隨著樣本量下降（由左至右或由上至下），模型間的「提升百分比」通常會呈現更明顯的波動。</p>
         </div>
     </div>
 
@@ -246,7 +246,7 @@
             <thead>
                 <tr>
                     <th>資料集 (依規模降序)</th>
-                    <th style="text-align: center;">樣本數</th>
+                    <th style="text-align: center;">樣本數 (N)</th>
                     <th style="text-align: center;">早期差異 (E20)</th>
                     <th style="text-align: center;">最終模型表現 (E80)</th>
                     <th style="text-align: right;">相對提升</th>
@@ -260,26 +260,26 @@
 
     <!-- 結論分析 -->
     <div class="insight-box">
-        <h2>📊 數據規模與模型表現的關聯性</h2>
+        <h2>📊 數據規模與模型表現的最新關聯分析</h2>
         <div class="insight-grid">
             <div>
                 <div class="insight-item">
-                    <h4><div class="bullet"></div>大樣本區塊 (N > 1,500)</h4>
-                    <p>APTOS 與 MESSIDOR2 展現了穩健的基礎。在大樣本下，遷移學習主要扮演「加速收斂」的角色，對最終準確度的邊際貢獻較穩定。</p>
+                    <h4><div class="bullet"></div>大樣本優勢區 (APTOS, MESSIDOR2, Glaucoma)</h4>
+                    <p>樣本量超過 1,500 筆的資料集，模型在 epoch 80 時表現出極高的準確度穩定性，反映出足夠的影像多樣性能支持深度學習提取本域特徵。</p>
                 </div>
                 <div class="insight-item">
-                    <h4><div class="bullet"></div>中樣本區塊 (1,000 < N < 1,500)</h4>
-                    <p>Retina 與 Glaucoma 數據量中等，此處的模型表現容易受到特定標註偏差影響，遷移學習的表現開始出現波動。</p>
+                    <h4><div class="bullet"></div>中樣本觀察區 (Retina)</h4>
+                    <p>樣本數調整為 601 筆後，Retina 資料集的性能表現相對於其樣本規模顯得更具挑戰性，建議檢查該資料集的標註雜訊比。</p>
                 </div>
             </div>
             <div>
                 <div class="insight-item">
-                    <h4><div class="bullet"></div>小樣本區塊 (N < 500)</h4>
-                    <p>IDRiD 與 PAPILA 樣本數極其有限。此處我們觀察到遷移學習介入後有顯著的性能跳躍，證明了跨域特徵在數據貧乏時的補充價值。</p>
+                    <h4><div class="bullet"></div>小樣本潛力區 (IDRiD, PAPILA)</h4>
+                    <p>樣本數落於 500 左右。雖然資料量有限，但透過 ImageNet 預訓練權重的導入，能有效填補特徵空間的空白，使模型具備臨床診斷的基礎能力。</p>
                 </div>
                 <div class="insight-item">
-                    <h4><div class="bullet"></div>未來的資料蒐集策略</h4>
-                    <p>若要進一步提升 IDRiD 的表現，除了增加樣本外，應考慮引入針對醫學影像微調的 SSL (Self-Supervised Learning) 預訓練權重。</p>
+                    <h4><div class="bullet"></div>結論與對策</h4>
+                    <p>目前的排序清晰地展示了：隨著樣本量減少，模型對於權重初始化（Transfer Learning）的敏感度逐漸提高。未來研究應集中在小樣本資料集的數據增強策略。</p>
                 </div>
             </div>
         </div>
@@ -287,17 +287,17 @@
 </div>
 
 <script>
-    // 原始數據
+    // 更新後的樣本數據
     const RAW_SAMPLE_COUNTS = {
         "APTOS2019": 3662,
-        "MESSIDOR2": 1748,
-        "Glaucoma_fundus": 1540,
-        "Retina": 1200,
-        "PAPILA": 488,
-        "IDRiD_data": 413
+        "MESSIDOR2": 1744,
+        "Glaucoma_fundus": 1544,
+        "Retina": 601,
+        "IDRiD_data": 516,
+        "PAPILA": 488
     };
 
-    // 根據樣本數由大到小排序 DATASETS 陣列
+    // 根據更新後的樣本數由大到小排序
     const DATASETS = Object.keys(RAW_SAMPLE_COUNTS).sort((a, b) => RAW_SAMPLE_COUNTS[b] - RAW_SAMPLE_COUNTS[a]);
 
     const RAW_DATA = {
@@ -356,6 +356,10 @@
         }
     };
 
+    function formatLabel(id) {
+        return id.replace('_data', ' Data').replace('_fundus', ' Fundus');
+    }
+
     function updateView(metric) {
         document.getElementById('btn-auroc').classList.toggle('active', metric === 'auroc');
         document.getElementById('btn-accuracy').classList.toggle('active', metric === 'accuracy');
@@ -367,7 +371,7 @@
 
     function renderMainChart(metric, data) {
         const ctx = document.getElementById('mainChart').getContext('2d');
-        const labels = DATASETS.map(d => d.replace('_data', ''));
+        const labels = DATASETS.map(d => formatLabel(d));
         const yMin = metric === 'auroc' ? 0.7 : 0.45;
 
         if (chartMain) chartMain.destroy();
@@ -410,7 +414,15 @@
                     },
                     x: {
                         grid: { display: false },
-                        ticks: { font: { size: 11, weight: '600' }, color: '#64748b' }
+                        ticks: { 
+                            font: { size: 10, weight: '600' }, 
+                            color: '#64748b',
+                            callback: function(val, index) {
+                                // 如果標籤太長則換行或簡寫
+                                let label = this.getLabelForValue(val);
+                                return label.length > 12 ? label.split(' ')[0] : label;
+                            }
+                        }
                     }
                 }
             },
@@ -420,7 +432,7 @@
 
     function renderSampleChart() {
         const ctx = document.getElementById('sampleChart').getContext('2d');
-        const labels = DATASETS.map(d => d.replace('_data', ''));
+        const labels = DATASETS.map(d => formatLabel(d));
         const sampleValues = DATASETS.map(d => RAW_SAMPLE_COUNTS[d]);
 
         if (chartSample) chartSample.destroy();
@@ -473,7 +485,7 @@
 
             return `
                 <tr>
-                    <td><span class="dataset-name">${d.replace('_data', '')}</span></td>
+                    <td><span class="dataset-name">${formatLabel(d)}</span></td>
                     <td style="text-align: center;"><span style="color: #64748b; font-family: monospace;">${n.toLocaleString()}</span></td>
                     <td style="text-align: center;">
                         <span class="val-pill ${isE20Positive ? 'improvement' : ''}">
