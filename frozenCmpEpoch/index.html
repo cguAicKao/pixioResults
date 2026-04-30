@@ -46,27 +46,27 @@
 
             const performanceData = {
                 accuracy: [
-                    { name: 'APTOS2019', epochs: [{ e: 0, mean: 0.82636, std: 0.00649 }, { e: 10, mean: 0.8315, std: 0.0069 }, { e: 20, mean: 0.8333, std: 0.0089 }, { e: 30, mean: 0.8282, std: 0.0092 }, { e: 50, mean: 0.8282, std: 0.0068 }] },
-                    { name: 'MESSIDOR2', epochs: [{ e: 0, mean: 0.72281, std: 0.00945 }, { e: 10, mean: 0.7019, std: 0.0058 }, { e: 20, mean: 0.7186, std: 0.0101 }, { e: 30, mean: 0.7171, std: 0.0078 }, { e: 50, mean: 0.7015, std: 0.0088 }] },
-                    { name: 'Glaucoma Fundus', epochs: [{ e: 0, mean: 0.76559, std: 0.01054 }, { e: 10, mean: 0.8082, std: 0.0074 }, { e: 20, mean: 0.8004, std: 0.0119 }, { e: 30, mean: 0.8026, std: 0.0141 }, { e: 50, mean: 0.7794, std: 0.0077 }] },
-                    { name: 'Retina', epochs: [{ e: 0, mean: 0.59669, std: 0.01105 }, { e: 10, mean: 0.5834, std: 0.0092 }, { e: 20, mean: 0.5779, std: 0.0154 }, { e: 30, mean: 0.5669, std: 0.0249 }, { e: 50, mean: 0.5823, std: 0.0100 }] },
-                    { name: 'IDRiD Data', epochs: [{ e: 0, mean: 0.47767, std: 0.09572 }, { e: 10, mean: 0.4641, std: 0.0447 }, { e: 20, mean: 0.4738, std: 0.0359 }, { e: 30, mean: 0.4932, std: 0.0511 }, { e: 50, mean: 0.5010, std: 0.0483 }] },
-                    { name: 'PAPILA', epochs: [{ e: 0, mean: 0.72245, std: 0.05173 }, { e: 10, mean: 0.7429, std: 0.0697 }, { e: 20, mean: 0.7653, std: 0.0191 }, { e: 30, mean: 0.7592, std: 0.0212 }, { e: 50, mean: 0.7449, std: 0.0216 }] }
+                    { name: 'APTOS2019', epochs: [{ e: 10, mean: 0.82636, std: 0.00649 }, { e: 20, mean: 0.8315, std: 0.0069 }, { e: 30, mean: 0.8333, std: 0.0089 }, { e: 40, mean: 0.8282, std: 0.0092 }, { e: 60, mean: 0.8282, std: 0.0068 }] },
+                    { name: 'MESSIDOR2', epochs: [{ e: 10, mean: 0.72281, std: 0.00945 }, { e: 20, mean: 0.7019, std: 0.0058 }, { e: 30, mean: 0.7186, std: 0.0101 }, { e: 40, mean: 0.7171, std: 0.0078 }, { e: 60, mean: 0.7015, std: 0.0088 }] },
+                    { name: 'Glaucoma Fundus', epochs: [{ e: 10, mean: 0.76559, std: 0.01054 }, { e: 20, mean: 0.8082, std: 0.0074 }, { e: 30, mean: 0.8004, std: 0.0119 }, { e: 40, mean: 0.8026, std: 0.0141 }, { e: 60, mean: 0.7794, std: 0.0077 }] },
+                    { name: 'Retina', epochs: [{ e: 10, mean: 0.59669, std: 0.01105 }, { e: 20, mean: 0.5834, std: 0.0092 }, { e: 30, mean: 0.5779, std: 0.0154 }, { e: 40, mean: 0.5669, std: 0.0249 }, { e: 60, mean: 0.5823, std: 0.0100 }] },
+                    { name: 'IDRiD Data', epochs: [{ e: 10, mean: 0.47767, std: 0.09572 }, { e: 20, mean: 0.4641, std: 0.0447 }, { e: 30, mean: 0.4738, std: 0.0359 }, { e: 40, mean: 0.4932, std: 0.0511 }, { e: 60, mean: 0.5010, std: 0.0483 }] },
+                    { name: 'PAPILA', epochs: [{ e: 10, mean: 0.72245, std: 0.05173 }, { e: 20, mean: 0.7429, std: 0.0697 }, { e: 30, mean: 0.7653, std: 0.0191 }, { e: 40, mean: 0.7592, std: 0.0212 }, { e: 60, mean: 0.7449, std: 0.0216 }] }
                 ],
                 auroc: [
-                    { name: 'APTOS2019', epochs: [{ e: 0, mean: 0.94035, std: 0.00223 }, { e: 10, mean: 0.9397, std: 0.0020 }, { e: 20, mean: 0.9415, std: 0.0016 }, { e: 30, mean: 0.9394, std: 0.0010 }, { e: 50, mean: 0.9397, std: 0.0026 }] },
-                    { name: 'MESSIDOR2', epochs: [{ e: 0, mean: 0.88527, std: 0.00553 }, { e: 10, mean: 0.8778, std: 0.0031 }, { e: 20, mean: 0.8828, std: 0.0035 }, { e: 30, mean: 0.8847, std: 0.0046 }, { e: 50, mean: 0.8731, std: 0.0105 }] },
-                    { name: 'Glaucoma Fundus', epochs: [{ e: 0, mean: 0.90455, std: 0.00349 }, { e: 10, mean: 0.9201, std: 0.0042 }, { e: 20, mean: 0.9214, std: 0.0035 }, { e: 30, mean: 0.9215, std: 0.0043 }, { e: 50, mean: 0.9115, std: 0.0037 }] },
-                    { name: 'Retina', epochs: [{ e: 0, mean: 0.71609, std: 0.01280 }, { e: 10, mean: 0.7070, std: 0.0047 }, { e: 20, mean: 0.7018, std: 0.0083 }, { e: 30, mean: 0.7025, std: 0.0112 }, { e: 50, mean: 0.6935, std: 0.0155 }] },
-                    { name: 'IDRiD Data', epochs: [{ e: 0, mean: 0.79143, std: 0.02645 }, { e: 10, mean: 0.7910, std: 0.0183 }, { e: 20, mean: 0.7949, std: 0.0156 }, { e: 30, mean: 0.7941, std: 0.0095 }, { e: 50, mean: 0.8016, std: 0.0172 }] },
-                    { name: 'PAPILA', epochs: [{ e: 0, mean: 0.71449, std: 0.03603 }, { e: 10, mean: 0.7331, std: 0.0179 }, { e: 20, mean: 0.7159, std: 0.0150 }, { e: 30, mean: 0.7279, std: 0.0219 }, { e: 50, mean: 0.7105, std: 0.0288 }] }
+                    { name: 'APTOS2019', epochs: [{ e: 10, mean: 0.94035, std: 0.00223 }, { e: 20, mean: 0.9397, std: 0.0020 }, { e: 30, mean: 0.9415, std: 0.0016 }, { e: 40, mean: 0.9394, std: 0.0010 }, { e: 60, mean: 0.9397, std: 0.0026 }] },
+                    { name: 'MESSIDOR2', epochs: [{ e: 10, mean: 0.88527, std: 0.00553 }, { e: 20, mean: 0.8778, std: 0.0031 }, { e: 30, mean: 0.8828, std: 0.0035 }, { e: 40, mean: 0.8847, std: 0.0046 }, { e: 60, mean: 0.8731, std: 0.0105 }] },
+                    { name: 'Glaucoma Fundus', epochs: [{ e: 10, mean: 0.90455, std: 0.00349 }, { e: 20, mean: 0.9201, std: 0.0042 }, { e: 30, mean: 0.9214, std: 0.0035 }, { e: 40, mean: 0.9215, std: 0.0043 }, { e: 60, mean: 0.9115, std: 0.0037 }] },
+                    { name: 'Retina', epochs: [{ e: 10, mean: 0.71609, std: 0.01280 }, { e: 20, mean: 0.7070, std: 0.0047 }, { e: 30, mean: 0.7018, std: 0.0083 }, { e: 40, mean: 0.7025, std: 0.0112 }, { e: 60, mean: 0.6935, std: 0.0155 }] },
+                    { name: 'IDRiD Data', epochs: [{ e: 10, mean: 0.79143, std: 0.02645 }, { e: 20, mean: 0.7910, std: 0.0183 }, { e: 30, mean: 0.7949, std: 0.0156 }, { e: 40, mean: 0.7941, std: 0.0095 }, { e: 60, mean: 0.8016, std: 0.0172 }] },
+                    { name: 'PAPILA', epochs: [{ e: 10, mean: 0.71449, std: 0.03603 }, { e: 20, mean: 0.7331, std: 0.0179 }, { e: 30, mean: 0.7159, std: 0.0150 }, { e: 40, mean: 0.7279, std: 0.0219 }, { e: 60, mean: 0.7105, std: 0.0288 }] }
                 ]
             };
 
             const colors = ['#2563eb', '#dc2626', '#16a34a', '#d97706', '#7c3aed', '#0891b2'];
 
             const lineChartData = useMemo(() => {
-                const epochs = [0, 10, 20, 30, 50];
+                const epochs = [10, 20, 30, 40, 60];
                 return epochs.map(epoch => {
                     const row = { epoch: `Epoch ${epoch}` };
                     statsBase.forEach(stat => {
@@ -116,7 +116,6 @@
                             <div className="mb-6 flex flex-col md:flex-row md:items-end justify-between gap-6">
                                 <div className="space-y-2">
                                     <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight">凍結策略性能對比</h1>
-                                    <p className="text-slate-500 font-medium text-lg">數據集按樣本量由左至右降序排列（已補全 Retina 初始數據）</p>
                                 </div>
                                 <div className="inline-flex bg-slate-200 p-1 rounded-xl">
                                     {['accuracy', 'auroc'].map(m => (
